@@ -1,14 +1,13 @@
 {
-  "name": "m6web/cassandra-bundle",
+  "name": "hendrahuang/cassandra-bundle",
   "type" : "symfony-bundle",
   "description": "Symfony2 bundle on top of datastax/php-driver",
   "keywords": ["cassandra", "bundle"],
   "license" : "MIT",
   "authors": [
     {
-      "name": "M6Web",
-      "email" : "opensource@m6web.fr",
-      "homepage": "http://tech.m6web.fr/"
+      "name": "Hendra-Huang",
+      "email" : "hendrahuang92@gmail.com"
     }
   ],
   "require": {
@@ -17,8 +16,6 @@
   },
   "require-dev": {
     "atoum/atoum": "~2.0",
-    "m6web/coke": "~1.2",
-    "m6web/symfony2-coding-standard": "~2.0",
     "symfony/dependency-injection": "~2.3",
     "symfony/event-dispatcher": "~2.3",
     "symfony/config" : "~2.3",
@@ -26,7 +23,7 @@
     "datastax/php-driver": "dev-master"
   },
   "autoload": {
-    "psr-4": {"M6Web\\Bundle\\CassandraBundle\\": "src/"}
+    "psr-4": {"CassandraBundle\\": "src/"}
   },
   "config": {
     "bin-dir": "bin/"

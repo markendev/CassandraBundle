@@ -1,8 +1,6 @@
 # CassandraBundle
 
-[![Build Status](https://travis-ci.org/M6Web/CassandraBundle.svg?branch=master)](https://travis-ci.org/M6Web/CassandraBundle)
-
-The CassandraBundle provide a Cassandra client as a Symfony service.
+The CassandraBundle provide a Cassandra EntityManager as a Symfony service.
 
 ## Installation
 
@@ -14,7 +12,7 @@ Require the bundle in your composer.json file :
 ```json
 {
     "require": {
-        "m6web/cassandra-bundle": "~1.0",
+        "hendrahuang/cassandra-bundle": "~1.0",
     }
 }
 ```
@@ -27,7 +25,7 @@ Register the bundle in your kernel :
 public function registerBundles()
 {
     $bundles = array(
-        new M6Web\Bundle\CassandraBundle\M6WebCassandraBundle(),
+        new CassandraBundle\CassandraBundle(),
     );
 }
 ```
@@ -35,59 +33,48 @@ public function registerBundles()
 Then install the bundle :
 
 ```shell
-$ composer update m6web/cassandra-bundle
+$ composer update hendrahuang/cassandra-bundle
 ```
 
 ## Usage
 
-Add the `m6web_cassandra` section in your configuration file. Here is the minimal configuration required. 
+Add the `cassandra` section in your configuration file. Here is the minimal configuration required. 
 
 ```yaml
-m6web_cassandra:
-    clients:
-        myclient:
+cassandra:
+    connections:
+        default:
             keyspace: "mykeyspace"
-            contact_endpoints:
+            hosts:
                 - 127.0.0.1
                 - 127.0.0.2
                 - 127.0.0.3
+            user: ''
+            password: ''
         
 ```
 
-Then you can ask container for your client :
+Then you can ask container for your entity manager :
 
 ```php
-$cassandra = $this->get('m6web_cassandra.client.myclient');
+$em = $this->get('cassandra.default_entity_manager');
 
-$prepared = $cassandra->prepare("INSERT INTO test (id, title) VALUES(?, ?)");
+// Insertion
+$em->insert($entity);
 
-$batch     = new Cassandra\BatchStatement(Cassandra::BATCH_LOGGED);
-$batch->add($prepared, ['id' => 1, 'title' => 'my title']);
-$batch->add($prepared, ['id' => 2, 'title' => 'my title 2']);
+// Update
+$em->update($entity);
 
-$cassandra->execute($batch);
+// Deletion
+$em->delete($entity);
 
-$statement = new Cassandra\SimpleStatement('SELECT * FROM test');
-$result = $cassandra->execute($statement);
-
-foreach ($result as $row) {
-    // do something with $row
-}
-
-$statement = new Cassandra\SimpleStatement('SELECT * FROM test');
-$result = $cassandra->executeAsync($statement);
-
-// do something while cassandra query running
-
-foreach($result->get() as $row) {
-    // do something with row
-}
+$em->flush();
 ```
 
 Bundle provide a util class for extracting Datetime from a timeuuid string. 
 
 ```php
-use M6Web\Bundle\CassandraBundle\Cassandra\Type as TypeUtils;
+use CassandraBundle\Cassandra\Utility\Type as TypeUtils;
 
 $datetime = TypeUtils::getDateTimeFromTimeuuidString('513a5340-6da0-11e5-815e-93ec150e89fd');
 
@@ -113,10 +100,10 @@ Datacollector is available when the symfony profiler is enabled. The collector a
 ## Configuration reference
 
 ```yaml
-m6web_cassandra:
+cassandra:
     dispatch_events: true                 # By default event are triggered on each cassandra command
-    clients:
-        client_name:
+    connections:
+        default:
             persistent_sessions: true     # persistent session connection 
             keyspace: "mykeyspace"        # required keyspace to connect
             load_balancing: "round-robin" # round-robin or dc-aware-round-robin
@@ -128,11 +115,10 @@ m6web_cassandra:
             default_pagesize: 10000       # -1 to disable pagination
             contact_endpoints:            # required list of ip to contact
                 - 127.0.0.1
-            port_endpoint: 9042           # cassandra port
+            port: 9042                    # cassandra port
             token_aware_routing: true     # Enable or disable token aware routing
-            credentials:                  # cassandra authentication
-                username: ""              # username for authentication
-                password: ""              # password for authentication
+            user: ""                      # username for authentication
+            password: ""                  # password for authentication
             ssl: false                    # set up ssl context
             default_timeout: null         # default is null, must be an integer if set
             timeout:
@@ -145,17 +131,6 @@ m6web_cassandra:
             ...
 ```
 
-## Contributing
-
-First of all, thank you for contributing !
-
-Here are few rules to follow for a easier code review before the maintainers accept and merge your request.
-
-- you MUST follow the Symfony2 coding standard : you can use `./bin/coke` to validate
-- you MUST run the test
-- you MUST write or update tests
-- you MUST write or update  documentation
-
 ## Running the test
 
 Install the composer dev dependencies
@@ -165,8 +140,3 @@ $ composer install --dev
 ```
 
 Then run the test with [atoum](https://github.com/atoum/atoum) unit test framework
-
-```shell
-./bin/atoum
-```
-

@@ -1,0 +1,10 @@
+imports:
+    - { resource: default-config.yml }
+
+cassandra:
+  connections:
+    client_test:
+      hosts:
+        - '127.0.0.4'
+        - '127.0.0.5'
+        - '127.0.0.6'

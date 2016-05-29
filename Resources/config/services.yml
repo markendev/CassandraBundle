@@ -1,0 +1,6 @@
+services:
+    cassandra.data_collector:
+        class: CassandraBundle\DataCollector\CassandraDataCollector
+        tags:
+            - { name: data_collector, template: 'CassandraBundle:Collector:cassandra', id: 'cassandra' }
+            - { name: kernel.event_listener, event: cassandra, method: onCassandraCommand }

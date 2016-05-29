@@ -1,0 +1,10 @@
+cassandra:
+  connections:
+    client_test:
+      keyspace: 'test'
+      hosts:
+        - '127.0.0.1'
+        - '127.0.0.2'
+        - '127.0.0.3'
+      user: ''
+      password: ''
