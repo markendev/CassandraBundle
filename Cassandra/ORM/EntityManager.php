@@ -10,25 +10,24 @@ use Cassandra\Session;
 use Cassandra\Statement;
 use CassandraBundle\Cassandra\Connection;
 use CassandraBundle\Cassandra\ORM\FutureResponse;
+use CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactoryInterface;
 use CassandraBundle\EventDispatcher\CassandraEvent;
 use Psr\Log\LoggerInterface;
-use Doctrine\Common\Annotations\Reader;
 
-class EntityManager implements Session
+class EntityManager implements Session, EntityManagerInterface
 {
     protected $connection;
-    private $statements;
-    private $reader;
+    private $metadataFactory;
     private $logger;
+    private $statements;
 
     const STATEMENT = 'statement';
     const ARGUMENTS = 'arguments';
-    const ANNOTATION_CASSANDRA_COLUMN_CLASS = \CassandraBundle\Cassandra\Mapping\Column::class;
 
-    public function __construct(Connection $connection, Reader $reader, LoggerInterface $logger)
+    public function __construct(Connection $connection, ClassMetadataFactoryInterface $metadataFactory, LoggerInterface $logger)
     {
         $this->connection = $connection;
-        $this->reader = $reader;
+        $this->metadataFactory = $metadataFactory;
         $this->logger = $logger;
         $this->statements = [];
     }
@@ -41,6 +40,37 @@ class EntityManager implements Session
     public function getKeyspace()
     {
         return $this->connection->getKeyspace();
+    }
+
+    /**
+     * Gets the metadata factory used to gather the metadata of classes.
+     *
+     * @return \CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactory
+     */
+    public function getMetadataFactory()
+    {
+        return $this->metadataFactory;
+    }
+
+    /**
+     * Returns the ORM metadata descriptor for a class.
+     *
+     * The class name must be the fully-qualified class name without a leading backslash
+     * (as it is returned by get_class($obj)) or an aliased class name.
+     *
+     * Examples:
+     * MyProject\Domain\User
+     * sales:PriceRequest
+     *
+     * Internal note: Performance-sensitive method.
+     *
+     * @param string $className
+     *
+     * @return \CassandraBundle\Cassandra\ORM\Mapping\ClassMetadata
+     */
+    public function getClassMetadata($className)
+    {
+        return $this->metadataFactory->getMetadataFor($className);
     }
 
     /**

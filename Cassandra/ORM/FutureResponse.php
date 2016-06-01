@@ -1,6 +1,6 @@
 <?php
 
-namespace CassandraBundle\Cassandra;
+namespace CassandraBundle\Cassandra\ORM;
 
 use Cassandra\Future;
 use CassandraBundle\EventDispatcher\CassandraEvent;

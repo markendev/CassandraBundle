@@ -12,7 +12,7 @@ Require the bundle in your composer.json file :
 ```json
 {
     "require": {
-        "hendrahuang/cassandra-bundle": "~1.0",
+        "hendrahuang/cassandra-bundle": "dev-master",
     }
 }
 ```
@@ -113,7 +113,7 @@ cassandra:
                 remote_dc_for_local_consistency: false
             default_consistency: "one"    # 'one', 'any', 'two', 'three', 'quorum', 'all', 'local_quorum', 'each_quorum', 'serial', 'local_serial', 'local_one'
             default_pagesize: 10000       # -1 to disable pagination
-            contact_endpoints:            # required list of ip to contact
+            hosts:                        # required list of ip to contact
                 - 127.0.0.1
             port: 9042                    # cassandra port
             token_aware_routing: true     # Enable or disable token aware routing

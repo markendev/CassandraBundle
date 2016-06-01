@@ -1,6 +1,6 @@
 <?php
 
-namespace CassandraBundle\Cassandra\Mapping;
+namespace CassandraBundle\Cassandra\ORM\Mapping;
 
 use Doctrine\Common\Annotations\Annotation;
 
