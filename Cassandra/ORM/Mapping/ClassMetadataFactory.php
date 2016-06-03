@@ -12,13 +12,20 @@ use Doctrine\Common\Util\ClassUtils;
  */
 class ClassMetadataFactory implements ClassMetadataFactoryInterface
 {
-    const ANNOTATION_CASSANDRA_TABLE_CLASS = \CassandraBundle\Cassandra\Mapping\Table::class;
-    const ANNOTATION_CASSANDRA_COLUMN_CLASS = \CassandraBundle\Cassandra\Mapping\Column::class;
+    const ANNOTATION_CASSANDRA_TABLE_CLASS = \CassandraBundle\Cassandra\ORM\Mapping\Table::class;
+    const ANNOTATION_CASSANDRA_COLUMN_CLASS = \CassandraBundle\Cassandra\ORM\Mapping\Column::class;
+
+    private $reader;
 
     /**
      * @var ClassMetadata[]
      */
     private $loadedMetadata = [];
+
+    public function __construct(Reader $reader)
+    {
+        $this->reader = $reader;
+    }
 
     /**
      * Returns an array of all the loaded metadata currently in memory.

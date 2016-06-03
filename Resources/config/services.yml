@@ -4,3 +4,7 @@ services:
         tags:
             - { name: data_collector, template: 'CassandraBundle:Collector:cassandra', id: 'cassandra' }
             - { name: kernel.event_listener, event: cassandra, method: onCassandraCommand }
+
+    cassandra.factory.metadata:
+        class: CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactory
+        arguments: ["@annotation_reader"]

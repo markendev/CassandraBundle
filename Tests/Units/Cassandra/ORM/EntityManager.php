@@ -11,7 +11,7 @@ class EntityManager extends test
     public function testConstruct()
     {
         $this
-            ->if($testedClass = new TestedClass($this->getConnection(), $this->getLoggerInterfaceMock()))
+            ->if($testedClass = new TestedClass($this->getConnection(), $this->getClassMetadataFactoryInterfaceMock(), $this->getLoggerInterfaceMock()))
             ->then
                 ->string($testedClass->getKeyspace())
                     ->isEqualTo('test')
@@ -21,7 +21,7 @@ class EntityManager extends test
     public function testExecute()
     {
         $this
-            ->if($testedClass = new TestedClass($this->getConnection(), $this->getLoggerInterfaceMock()))
+            ->if($testedClass = new TestedClass($this->getConnection(), $this->getClassMetadataFactoryInterfaceMock(), $this->getLoggerInterfaceMock()))
             ->and($clusterMock = $this->getClusterMock())
             ->and($sessionMock = $this->getSessionMock())
             ->and($clusterMock->getMockController()->connect = $sessionMock)
@@ -41,7 +41,7 @@ class EntityManager extends test
     public function testExecuteRetry()
     {
         $this
-            ->if($testedClass = new TestedClass($this->getConnection(), $this->getLoggerInterfaceMock()))
+            ->if($testedClass = new TestedClass($this->getConnection(), $this->getClassMetadataFactoryInterfaceMock(), $this->getLoggerInterfaceMock()))
             ->and($clusterMock = $this->getClusterMock())
             ->and($sessionMock = $this->getSessionMock(1))
             ->and($clusterMock->getMockController()->connect = $sessionMock)
@@ -61,7 +61,7 @@ class EntityManager extends test
     public function testExecuteRetryError()
     {
         $this
-            ->if($testedClass = new TestedClass($this->getConnection(), $this->getLoggerInterfaceMock()))
+            ->if($testedClass = new TestedClass($this->getConnection(), $this->getClassMetadataFactoryInterfaceMock(), $this->getLoggerInterfaceMock()))
             ->and($clusterMock = $this->getClusterMock())
             ->and($sessionMock = $this->getSessionMock(0, true))
             ->and($clusterMock->getMockController()->connect = $sessionMock)
@@ -87,7 +87,7 @@ class EntityManager extends test
     public function testExecuteAsync()
     {
         $this
-            ->if($testedClass = new TestedClass($this->getConnection(), $this->getLoggerInterfaceMock()))
+            ->if($testedClass = new TestedClass($this->getConnection(), $this->getClassMetadataFactoryInterfaceMock(), $this->getLoggerInterfaceMock()))
             ->and($clusterMock = $this->getClusterMock())
             ->and($sessionMock = $this->getSessionMock())
             ->and($clusterMock->getMockController()->connect = $sessionMock)
@@ -107,7 +107,7 @@ class EntityManager extends test
     public function testPrepare()
     {
         $this
-            ->if($testedClass = new TestedClass($this->getConnection(), $this->getLoggerInterfaceMock()))
+            ->if($testedClass = new TestedClass($this->getConnection(), $this->getClassMetadataFactoryInterfaceMock(), $this->getLoggerInterfaceMock()))
             ->and($clusterMock = $this->getClusterMock())
             ->and($sessionMock = $this->getSessionMock())
             ->and($clusterMock->getMockController()->connect = $sessionMock)
@@ -127,7 +127,7 @@ class EntityManager extends test
     public function testPrepareAsync()
     {
         $this
-            ->if($testedClass = new TestedClass($this->getConnection(), $this->getLoggerInterfaceMock()))
+            ->if($testedClass = new TestedClass($this->getConnection(), $this->getClassMetadataFactoryInterfaceMock(), $this->getLoggerInterfaceMock()))
             ->and($clusterMock = $this->getClusterMock())
             ->and($sessionMock = $this->getSessionMock())
             ->and($clusterMock->getMockController()->connect = $sessionMock)
@@ -147,7 +147,7 @@ class EntityManager extends test
     public function testEvents()
     {
         $this
-            ->if($testedClass = new TestedClass($this->getConnection(), $this->getLoggerInterfaceMock()))
+            ->if($testedClass = new TestedClass($this->getConnection(), $this->getClassMetadataFactoryInterfaceMock(), $this->getLoggerInterfaceMock()))
             ->and($clusterMock = $this->getClusterMock())
             ->and($sessionMock = $this->getSessionMock())
             ->and($clusterMock->getMockController()->connect = $sessionMock)
@@ -179,6 +179,13 @@ class EntityManager extends test
             'password' => '',
             'retries' => ['sync_requests' => 1],
         ]);
+    }
+
+    public function getClassMetadataFactoryInterfaceMock()
+    {
+        $this->getMockGenerator()->shuntParentClassCalls();
+
+        return new \mock\CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactoryInterface();
     }
 
     public function getLoggerInterfaceMock()

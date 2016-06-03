@@ -51,6 +51,7 @@ class CassandraExtension extends Extension
         $container
             ->register(sprintf('cassandra.%s_entity_manager', $connectionId), 'CassandraBundle\\Cassandra\\ORM\\EntityManager')
             ->addArgument(new Reference("cassandra.connection.$connectionId"))
+            ->addArgument(new Reference('cassandra.factory.metadata'))
             ->addArgument(new Reference('logger'));
     }
 
