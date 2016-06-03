@@ -6,8 +6,12 @@
   "license" : "MIT",
   "authors": [
     {
-      "name": "Hendra-Huang",
-      "email" : "hendrahuang92@gmail.com"
+      "name": "Hendra Huang",
+      "email": "hendrahuang92@gmail.com"
+    },
+    {
+      "name": "Indra Gunawan",
+      "email": "hello@indra.my.id"
     }
   ],
   "require": {
@@ -23,7 +27,9 @@
     "datastax/php-driver": "dev-master"
   },
   "autoload": {
-    "psr-4": {"CassandraBundle\\": "src/"}
+    "psr-4": {
+      "CassandraBundle\\": "src/"
+    }
   },
   "config": {
     "bin-dir": "bin/"
