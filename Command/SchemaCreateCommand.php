@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class CassandraSchemaCreateCommand extends ContainerAwareCommand
+class SchemaCreateCommand extends ContainerAwareCommand
 {
     protected function configure()
     {
@@ -45,7 +45,7 @@ class CassandraSchemaCreateCommand extends ContainerAwareCommand
             if (!preg_match('(^phar:)i', $sourceFile)) {
                 $sourceFile = realpath($sourceFile);
             }
-            if (preg_match('/src\/.*Entity\//', $sourceFile) {
+            if (preg_match('/src\/.*Entity\//', $sourceFile)) {
                 $className = str_replace('/', '\\', preg_replace('/(.*src\/)(.*).php/', '$2', $sourceFile));
                 $metadata = $em->getClassMetadata($className);
                 $tableName = $metadata->table['name'];
