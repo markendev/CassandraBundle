@@ -6,14 +6,14 @@ use Cassandra\Cluster\Builder;
 use Cassandra\SSLOptions\Builder as SSLOptionsBuilder;
 
 /**
- * Class Configurator
+ * Class Configurator.
  *
  * Configure cluster for cassandra connection
  */
 class Configurator
 {
     /**
-     * Configure given connection
+     * Configure given connection.
      *
      * @param Connection $connection
      */

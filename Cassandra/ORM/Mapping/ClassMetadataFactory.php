@@ -31,7 +31,7 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
     }
 
     /**
-     * Loads the metadata of the class in question
+     * Loads the metadata of the class in question.
      *
      * @param string $name The name of the class for which the metadata should get loaded.
      *
@@ -85,7 +85,7 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
      *
      * @param string $className
      *
-     * @return boolean TRUE if the metadata of the class in question is already loaded, FALSE otherwise.
+     * @return bool TRUE if the metadata of the class in question is already loaded, FALSE otherwise.
      */
     public function hasMetadataFor($className)
     {
@@ -99,8 +99,6 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
      *
      * @param string        $className
      * @param ClassMetadata $class
-     *
-     * @return void
      */
     public function setMetadataFor($className, $class)
     {
@@ -108,7 +106,7 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function doLoadMetadata($classMetadata)
     {
@@ -119,7 +117,7 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
         $classAnnotation = $this->reader->getClassAnnotation($reflectionClass, self::ANNOTATION_CASSANDRA_TABLE_CLASS);
         if ($classAnnotation) {
             $classMetadata->customRepositoryClassName = $classAnnotation->repositoryClass;
-            $classMetadata->table['name'] = $classAnnotation->name ?: strtolower(preg_replace('/([^A-Z])([A-Z])/', "$1_$2", $reflectionClass->getShortName()));
+            $classMetadata->table['name'] = $classAnnotation->name ?: strtolower(preg_replace('/([^A-Z])([A-Z])/', '$1_$2', $reflectionClass->getShortName()));
         }
 
         // Save the field mapping to metadata
@@ -137,7 +135,7 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function newClassMetadataInstance($className)
     {
@@ -153,16 +151,17 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
      */
     private function getShortName($className)
     {
-        if (strpos($className, "\\") === false) {
+        if (strpos($className, '\\') === false) {
             return strtolower($className);
         }
 
-        $parts = explode("\\", $className);
+        $parts = explode('\\', $className);
+
         return strtolower(end($parts));
     }
 
     /**
-     * Return fully qualified class name
+     * Return fully qualified class name.
      *
      * @TODO: Resolve fqcn for AcmeAppBundle to Acme\\AppBundle
      */

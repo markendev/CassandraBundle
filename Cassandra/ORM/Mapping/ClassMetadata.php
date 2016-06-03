@@ -59,7 +59,7 @@ class ClassMetadata
 
     /**
      * READ-ONLY: The primary table definition. The definition is an array with the
-     * following entries:
+     * following entries:.
      *
      * name => <tableName>
      * indexes => array
@@ -78,6 +78,6 @@ class ClassMetadata
      */
     public function __toString()
     {
-        return __CLASS__ . '@' . spl_object_hash($this);
+        return __CLASS__.'@'.spl_object_hash($this);
     }
 }

@@ -5,35 +5,35 @@ namespace CassandraBundle\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Class CassandraEvent
+ * Class CassandraEvent.
  */
 class CassandraEvent extends Event
 {
     const EVENT_NAME = 'cassandra';
 
     /**
-     * Cassandra keyspace where event was dispatched
+     * Cassandra keyspace where event was dispatched.
      *
      * @var string
      */
     protected $keyspace;
 
     /**
-     * Cassandra's session command invoked
+     * Cassandra's session command invoked.
      *
      * @var string
      */
     protected $command;
 
     /**
-     * Command arguments
+     * Command arguments.
      *
      * @var array
      */
     protected $arguments;
 
     /**
-     * Command execution time
+     * Command execution time.
      *
      * @var float
      */
@@ -113,7 +113,7 @@ class CassandraEvent extends Event
     }
 
     /**
-     * Set execution start of a cassandra request
+     * Set execution start of a cassandra request.
      *
      * @return CassandraEvent
      */
@@ -126,7 +126,7 @@ class CassandraEvent extends Event
 
     /**
      * Stop the execution of cassandra request
-     * and set the request execution time
+     * and set the request execution time.
      *
      * @return CassandraEvent
      */
@@ -146,7 +146,7 @@ class CassandraEvent extends Event
     }
 
     /**
-     * Return execution time in milliseconds
+     * Return execution time in milliseconds.
      *
      * @return float
      */
@@ -154,5 +154,4 @@ class CassandraEvent extends Event
     {
         return $this->getExecutionTime() * 1000;
     }
-
 }

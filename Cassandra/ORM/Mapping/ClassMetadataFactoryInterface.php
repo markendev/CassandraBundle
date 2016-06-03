@@ -29,15 +29,14 @@ interface ClassMetadataFactoryInterface
      *
      * @param string $className
      *
-     * @return boolean TRUE if the metadata of the class in question is already loaded, FALSE otherwise.
+     * @return bool TRUE if the metadata of the class in question is already loaded, FALSE otherwise.
      */
     public function hasMetadataFor($className);
 
     /**
      * Sets the metadata descriptor for a specific class.
      *
-     * @param string $className
-     *
+     * @param string        $className
      * @param ClassMetadata $class
      */
     public function setMetadataFor($className, $class);

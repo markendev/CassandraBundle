@@ -37,20 +37,21 @@ class EntityRepository
     public function __construct($em, Mapping\ClassMetadata $class)
     {
         $this->_entityName = $class->name;
-        $this->_em         = $em;
-        $this->_class      = $class;
+        $this->_em = $em;
+        $this->_class = $class;
     }
 
     /**
      * @param string $id
      * @param string $class
-     * @return Object
+     *
+     * @return object
      */
     public function find($id)
     {
         return $this->_em->find($this->_entityName, $id, $lockMode, $lockVersion);
         if ($id) {
-            $query = sprintf("SELECT * FROM %s WHERE id = ?", $this->_class->table['name']);
+            $query = sprintf('SELECT * FROM %s WHERE id = ?', $this->_class->table['name']);
             $statement = $this->_em->prepare($query);
             $arguments = new Cassandra\ExecutionOptions(['arguments' => ['id' => new Cassandra\Uuid($id)]]);
             $result = $this->_em->execute($statement, $arguments);
@@ -63,16 +64,17 @@ class EntityRepository
             }
         }
 
-        return null;
+        return;
     }
 
     /**
      * @param string $class
+     *
      * @return [ArrayCollection]
      */
     public function findAll()
     {
-        $query = sprintf("SELECT * FROM %s", $this->_class->table['name']);
+        $query = sprintf('SELECT * FROM %s', $this->_class->table['name']);
         $statement = $this->_em->prepare($query);
         $result = $this->_em->execute($statement);
 

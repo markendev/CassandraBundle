@@ -7,7 +7,6 @@ use CassandraBundle\Cassandra\Connection as TestedClass;
 
 class Connection extends test
 {
-
     public function testConstruct()
     {
         $this
@@ -44,7 +43,7 @@ class Connection extends test
         return [
             'keyspace' => 'test',
             'contact_endpoints' => ['127.0.0.1'],
-            'retries' => [ 'sync_requests' => 1 ]
+            'retries' => ['sync_requests' => 1],
         ];
     }
 
@@ -52,7 +51,7 @@ class Connection extends test
     {
         $this->getMockGenerator()->shuntParentClassCalls();
 
-        return new \mock\Cassandra\Cluster;
+        return new \mock\Cassandra\Cluster();
     }
 
     public function getSessionMock($retry = 0, $error = false)
@@ -63,9 +62,9 @@ class Connection extends test
         $session->getMockController()->executeAsync = new \mock\Cassandra\Future();
         $session->getMockController()->prepareAsync = new \mock\Cassandra\Future();
 
-        $session->getMockController()->execute = function() use (&$retry, $error) {
+        $session->getMockController()->execute = function () use (&$retry, $error) {
             if (($error && $retry <= 0) || ($retry > 0)) {
-                $retry--;
+                --$retry;
                 throw new \Cassandra\Exception\RuntimeException('runtime error');
             }
         };

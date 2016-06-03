@@ -8,7 +8,6 @@ use CassandraBundle\Cassandra\Connection as CassandraConnection;
 
 class EntityManager extends test
 {
-
     public function testConstruct()
     {
         $this
@@ -70,7 +69,7 @@ class EntityManager extends test
             ->and($statement = $this->getStatementMock())
             ->then
                 ->exception(
-                    function() use($testedClass, $statement) {
+                    function () use ($testedClass, $statement) {
                         $testedClass->execute($statement);
                     }
                 )
@@ -169,8 +168,6 @@ class EntityManager extends test
                         ->call('dispatch')
                             ->twice()
         ;
-
-
     }
 
     protected function getConnection()
@@ -180,7 +177,7 @@ class EntityManager extends test
             'hosts' => ['127.0.0.1'],
             'user' => '',
             'password' => '',
-            'retries' => [ 'sync_requests' => 1 ]
+            'retries' => ['sync_requests' => 1],
         ]);
     }
 
@@ -188,21 +185,21 @@ class EntityManager extends test
     {
         $this->getMockGenerator()->shuntParentClassCalls();
 
-        return new \mock\CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactoryInterface;
+        return new \mock\CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactoryInterface();
     }
 
     public function getLoggerInterfaceMock()
     {
         $this->getMockGenerator()->shuntParentClassCalls();
 
-        return new \mock\Psr\Log\LoggerInterface;
+        return new \mock\Psr\Log\LoggerInterface();
     }
 
     protected function getClusterMock()
     {
         $this->getMockGenerator()->shuntParentClassCalls();
 
-        return new \mock\Cassandra\Cluster;
+        return new \mock\Cassandra\Cluster();
     }
 
     public function getSessionMock($retry = 0, $error = false)
@@ -213,9 +210,9 @@ class EntityManager extends test
         $session->getMockController()->executeAsync = new \mock\Cassandra\Future();
         $session->getMockController()->prepareAsync = new \mock\Cassandra\Future();
 
-        $session->getMockController()->execute = function() use (&$retry, $error) {
+        $session->getMockController()->execute = function () use (&$retry, $error) {
             if (($error && $retry <= 0) || ($retry > 0)) {
-                $retry--;
+                --$retry;
                 throw new \Cassandra\Exception\RuntimeException('runtime error');
             }
         };

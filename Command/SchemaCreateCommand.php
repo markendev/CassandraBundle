@@ -37,7 +37,7 @@ class SchemaCreateCommand extends ContainerAwareCommand
                 new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
                 \RecursiveIteratorIterator::LEAVES_ONLY
             ),
-            '/^.+' . preg_quote('.php') . '$/i',
+            '/^.+'.preg_quote('.php').'$/i',
             \RecursiveRegexIterator::GET_MATCH
         );
         foreach ($iterator as $file) {

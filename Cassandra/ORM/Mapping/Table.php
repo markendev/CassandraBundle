@@ -8,7 +8,7 @@ use Doctrine\Common\Annotations\Annotation;
  * @Annotation
  * @Target("CLASS")
  */
-final class Entity implements Annotation
+final class Table implements Annotation
 {
     /**
      * @var string

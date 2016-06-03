@@ -7,7 +7,6 @@ use Cassandra\ExecutionOptions;
 use Cassandra\Session;
 use Cassandra\Statement;
 use CassandraBundle\Cassandra\Connection;
-use CassandraBundle\Cassandra\ORM\SchemaManager;
 use CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactoryInterface;
 use CassandraBundle\EventDispatcher\CassandraEvent;
 use Psr\Log\LoggerInterface;
@@ -79,10 +78,9 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * Insert $entity to cassandra
+     * Insert $entity to cassandra.
      *
-     * @param Object $entity
-     * @return void
+     * @param object $entity
      */
     public function insert($entity)
     {
@@ -91,7 +89,7 @@ class EntityManager implements Session, EntityManagerInterface
         $fields = array_keys($values);
 
         $statement = sprintf(
-            "INSERT INTO \"%s\".\"%s\" (%s) VALUES (%s)",
+            'INSERT INTO "%s"."%s" (%s) VALUES (%s)',
             $this->getKeyspace(),
             $tableName,
             implode(', ', $fields),
@@ -105,10 +103,9 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * Update $entity to cassandra
+     * Update $entity to cassandra.
      *
-     * @param Object $entity
-     * @return void
+     * @param object $entity
      */
     public function update($entity)
     {
@@ -120,10 +117,10 @@ class EntityManager implements Session, EntityManagerInterface
         $fields = array_keys($values);
 
         $statement = sprintf(
-            "UPDATE \"%s\".\"%s\" SET %s WHERE id = ?",
+            'UPDATE "%s"."%s" SET %s WHERE id = ?',
             $this->getKeyspace(),
             $tableName,
-            implode(', ', array_map(function ($val) { return sprintf("%s = ?", $val); }, $fields))
+            implode(', ', array_map(function ($val) { return sprintf('%s = ?', $val); }, $fields))
         );
 
         $this->statements[] = [
@@ -133,17 +130,16 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * Delete $entity
+     * Delete $entity.
      *
-     * @param Object $entity
-     * @return void
+     * @param object $entity
      */
     public function delete($entity)
     {
         $tableName = $this->getTableName($entity);
 
         $statement = sprintf(
-            "DELETE FROM \"%s\".\"%s\" WHERE id = ?",
+            'DELETE FROM "%s"."%s" WHERE id = ?',
             $this->getKeyspace(),
             $tableName
         );
@@ -155,9 +151,7 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * Execute batch process
-     *
-     * @return void
+     * Execute batch process.
      */
     public function flush($async = true)
     {
@@ -166,7 +160,7 @@ class EntityManager implements Session, EntityManagerInterface
             $batch = new BatchStatement(Cassandra::BATCH_LOGGED);
 
             foreach ($this->statements as $statement) {
-                $this->logger->debug('CASSANDRA: '.$statement[self::STATEMENT].' => ['.implode(', ',$statement[self::ARGUMENTS]).']');
+                $this->logger->debug('CASSANDRA: '.$statement[self::STATEMENT].' => ['.implode(', ', $statement[self::ARGUMENTS]).']');
                 if ($async) {
                     $batch->add($this->prepareAsync($statement[self::STATEMENT]), $statement[self::ARGUMENTS]);
                 } else {
@@ -185,9 +179,10 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * Return values of all column in an $entity
+     * Return values of all column in an $entity.
      *
-     * @param Object $entity
+     * @param object $entity
+     *
      * @return []
      */
     private function readColumn($entity)
@@ -209,10 +204,11 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * Return $value with appropriate $type
+     * Return $value with appropriate $type.
      *
      * @param string $type
-     * @param mixed $value
+     * @param mixed  $value
+     *
      * @return mixed
      */
     private function encodeColumnType($type, $value)
@@ -230,20 +226,21 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * Return table name of $entity
+     * Return table name of $entity.
      *
-     * @param Object $entity
+     * @param object $entity
+     *
      * @return string
      */
     private function getTableName($entity)
     {
         $tableName = (new \ReflectionClass($entity))->getShortName();
 
-        return strtolower(preg_replace('/([^A-Z])([A-Z])/', "$1_$2", $tableName));
+        return strtolower(preg_replace('/([^A-Z])([A-Z])/', '$1_$2', $tableName));
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function execute(Statement $statement, ExecutionOptions $options = null)
     {
@@ -251,7 +248,7 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function executeAsync(Statement $statement, ExecutionOptions $options = null)
     {
@@ -259,7 +256,7 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function prepare($cql, ExecutionOptions $options = null)
     {
@@ -267,7 +264,7 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function prepareAsync($cql, ExecutionOptions $options = null)
     {
@@ -275,7 +272,7 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function close($timeout = null)
     {
@@ -283,7 +280,7 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function closeAsync()
     {
@@ -291,7 +288,7 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function schema()
     {
@@ -299,7 +296,7 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function prepareResponse($response, CassandraEvent $event = null)
     {
@@ -307,7 +304,7 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function prepareEvent($command, array $args)
     {
@@ -315,7 +312,7 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function send($command, array $arguments)
     {

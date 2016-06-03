@@ -10,14 +10,14 @@ use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * This is the class that loads and manages your bundle configuration
+ * This is the class that loads and manages your bundle configuration.
  *
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
  */
 class CassandraExtension extends Extension
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function load(array $configs, ContainerBuilder $container)
     {
@@ -37,7 +37,7 @@ class CassandraExtension extends Extension
 
     protected function ormLoad(ContainerBuilder $container, $connectionId, array $config)
     {
-        $class = "CassandraBundle\\Cassandra\\Connection";
+        $class = 'CassandraBundle\\Cassandra\\Connection';
         $definition = new Definition($class);
         $definition->addArgument($config);
         $definition->setConfigurator(['CassandraBundle\Cassandra\Configurator', 'buildCluster']);
@@ -49,7 +49,7 @@ class CassandraExtension extends Extension
         $container->setDefinition('cassandra.connection.'.$connectionId, $definition);
 
         $container
-            ->register(sprintf('cassandra.%s_entity_manager', $connectionId), "CassandraBundle\\Cassandra\\ORM\\EntityManager")
+            ->register(sprintf('cassandra.%s_entity_manager', $connectionId), 'CassandraBundle\\Cassandra\\ORM\\EntityManager')
             ->addArgument(new Reference("cassandra.connection.$connectionId"));
     }
 

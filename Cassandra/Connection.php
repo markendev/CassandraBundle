@@ -11,7 +11,7 @@ use CassandraBundle\EventDispatcher\CassandraEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Class Connection
+ * Class Connection.
  *
  * Connection to connect and query a cassandra cluster
  */
@@ -38,7 +38,7 @@ class Connection
     protected $keyspace;
 
     /**
-     * @var integer
+     * @var int
      */
     protected $maxRetry;
 
@@ -48,7 +48,7 @@ class Connection
     protected $eventDispatcher;
 
     /**
-     * Construct the connection
+     * Construct the connection.
      *
      * Initialize cluster and aggregate the session
      *
@@ -56,7 +56,7 @@ class Connection
      */
     public function __construct(array $config)
     {
-        $this->config  = $config;
+        $this->config = $config;
         $this->session = null;
 
         $this->keyspace = $config['keyspace'];
@@ -64,7 +64,7 @@ class Connection
     }
 
     /**
-     * Set event dispatcher
+     * Set event dispatcher.
      *
      * @param EventDispatcherInterface $eventDispatcher
      */
@@ -82,7 +82,7 @@ class Connection
     }
 
     /**
-     * Set cluster
+     * Set cluster.
      *
      * @param Cluster $cluster
      */
@@ -100,7 +100,7 @@ class Connection
     }
 
     /**
-     * Return connection configuration
+     * Return connection configuration.
      *
      * @return array
      */
@@ -110,7 +110,7 @@ class Connection
     }
 
     /**
-     * Return keyspace to use with session
+     * Return keyspace to use with session.
      *
      * @return string
      */
@@ -120,7 +120,7 @@ class Connection
     }
 
     /**
-     * Return Cassandra session
+     * Return Cassandra session.
      *
      * @return Session
      */
@@ -134,7 +134,7 @@ class Connection
     }
 
     /**
-     * Reset cassandra session
+     * Reset cassandra session.
      */
     public function resetSession()
     {
@@ -147,7 +147,7 @@ class Connection
     }
 
     /**
-     * Executes a given statement and returns a result
+     * Executes a given statement and returns a result.
      *
      * @param Statement        $statement statement to be executed
      * @param ExecutionOptions $options   execution options
@@ -162,7 +162,7 @@ class Connection
     }
 
     /**
-     * Executes a given statement and returns a future result
+     * Executes a given statement and returns a future result.
      *
      * Note that this method ignores ExecutionOptions::$timeout option, you can
      * provide one to Future::get() instead.
@@ -170,7 +170,7 @@ class Connection
      * @param Statement        $statement statement to be executed
      * @param ExecutionOptions $options   execution options
      *
-     * @return \Cassandra\Future     future result
+     * @return \Cassandra\Future future result
      */
     public function executeAsync(Statement $statement, ExecutionOptions $options = null)
     {
@@ -178,7 +178,7 @@ class Connection
     }
 
     /**
-     * Creates a prepared statement from a given CQL string
+     * Creates a prepared statement from a given CQL string.
      *
      * Note that this method only uses the ExecutionOptions::$timeout option,
      * all other options will be ignored.
@@ -188,7 +188,7 @@ class Connection
      *
      * @throws \Cassandra\Exception
      *
-     * @return PreparedStatement  prepared statement
+     * @return PreparedStatement prepared statement
      */
     public function prepare($cql, ExecutionOptions $options = null)
     {
@@ -196,14 +196,14 @@ class Connection
     }
 
     /**
-     * Asynchronously prepares a statement and returns a future prepared statement
+     * Asynchronously prepares a statement and returns a future prepared statement.
      *
      * Note that all options passed to this method will be ignored.
      *
      * @param string           $cql     CQL string to be prepared
      * @param ExecutionOptions $options preparation options
      *
-     * @return \Cassandra\Future  statement
+     * @return \Cassandra\Future statement
      */
     public function prepareAsync($cql, ExecutionOptions $options = null)
     {
@@ -211,11 +211,9 @@ class Connection
     }
 
     /**
-     * Closes current session and all of its connections
+     * Closes current session and all of its connections.
      *
      * @param float|null $timeout Timeout to wait for closure in seconds
-     *
-     * @return void
      */
     public function close($timeout = null)
     {
@@ -224,9 +222,9 @@ class Connection
     }
 
     /**
-     * Asynchronously closes current session once all pending requests have finished
+     * Asynchronously closes current session once all pending requests have finished.
      *
-     * @return \Cassandra\Future  future
+     * @return \Cassandra\Future future
      */
     public function closeAsync()
     {
@@ -249,7 +247,7 @@ class Connection
     }
 
     /**
-     * Prepare response to return
+     * Prepare response to return.
      *
      * @param mixed               $response
      * @param CassandraEvent|null $event
@@ -273,7 +271,7 @@ class Connection
     }
 
     /**
-     * Initialize event
+     * Initialize event.
      *
      * @param string $command
      * @param array  $args
@@ -283,7 +281,7 @@ class Connection
     protected function prepareEvent($command, array $args)
     {
         if (is_null($this->getEventDispatcher())) {
-            return null;
+            return;
         }
 
         $event = new CassandraEvent();
@@ -296,7 +294,7 @@ class Connection
     }
 
     /**
-     * Send command to cassandra session
+     * Send command to cassandra session.
      *
      * @param string $command
      * @param array  $arguments
@@ -323,7 +321,7 @@ class Connection
                 if ($retry > 0) {
                     // Reset the current session to retry the command
                     $this->resetSession();
-                    $retry--;
+                    --$retry;
                 } else {
                     // too many retries, rethrow the exception
                     throw $e;

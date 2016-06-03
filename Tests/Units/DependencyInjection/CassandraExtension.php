@@ -3,12 +3,10 @@
 namespace CassandraBundle\Tests\Units\DependencyInjection;
 
 use mageekguy\atoum\test;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-
 use CassandraBundle\DependencyInjection\CassandraExtension as TestedClass;
 
 class CassandraExtension extends test
@@ -194,7 +192,6 @@ class CassandraExtension extends test
             ->string($arguments2['password'])
                 ->isEqualTo('passwdtest')
         ;
-
     }
 
     /**
@@ -206,11 +203,10 @@ class CassandraExtension extends test
         $container = new ContainerBuilder($parameterBag);
 
         $this->if($extension = new TestedClass())
-            ->exception(function() use($extension, $configs, $container) {
+            ->exception(function () use ($extension, $configs, $container) {
                 $extension->load($configs, $container);
             })
             ->isInstanceOf('\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException');
-
     }
 
     public function testInvalidConfig()
@@ -219,18 +215,16 @@ class CassandraExtension extends test
         $configs = [[
             'connections' => [
                 'client_test' => [
-                    'keyspace' => 'test'
-                    , 'hosts' => ['127.0.0.1']
-                    , 'load_balancing' => 'dc-aware-round-robin'
-                ]
-            ]
+                    'keyspace' => 'test', 'hosts' => ['127.0.0.1'], 'load_balancing' => 'dc-aware-round-robin',
+                ],
+            ],
         ]];
 
         $parameterBag = new ParameterBag(array('kernel.debug' => true));
         $container = new ContainerBuilder($parameterBag);
 
         $this->if($extension = new TestedClass())
-            ->exception(function() use($extension, $configs, $container) {
+            ->exception(function () use ($extension, $configs, $container) {
                 $extension->load($configs, $container);
             })
             ->isInstanceOf('\InvalidArgumentException');
@@ -255,22 +249,18 @@ class CassandraExtension extends test
             [[[
                 'connections' => [
                     'client_test' => [
-                        'keyspace' => 'test'
-                        , 'hosts' => ['127.0.0.1']
-                        , 'load_balancing' => 'invalid'
-                    ]
-                ]
+                        'keyspace' => 'test', 'hosts' => ['127.0.0.1'], 'load_balancing' => 'invalid',
+                    ],
+                ],
             ]]],
             // bad consistency
             [[[
                 'connections' => [
                     'client_test' => [
-                        'keyspace' => 'test'
-                        , 'hosts' => ['127.0.0.1']
-                        , 'default_consistency' => 'invalid'
-                    ]
-                ]
-            ]]]
+                        'keyspace' => 'test', 'hosts' => ['127.0.0.1'], 'default_consistency' => 'invalid',
+                    ],
+                ],
+            ]]],
         ];
     }
 
@@ -291,7 +281,7 @@ class CassandraExtension extends test
 
     protected function getDefaultConfigKeys(array $keySup = [])
     {
-            return array_merge(
+        return array_merge(
                 [
                 'persistent_sessions',
                 'keyspace',

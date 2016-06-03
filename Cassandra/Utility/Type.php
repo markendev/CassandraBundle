@@ -3,7 +3,7 @@
 namespace CassandraBundle\Cassandra\Utility;
 
 /**
- * Class Type provide function for manipulating cassandra type
+ * Class Type provide function for manipulating cassandra type.
  */
 class Type
 {
@@ -13,7 +13,7 @@ class Type
     const UUID_LENGTH = 16;
 
     /**
-     * Get a Datetime from a timeuuid string
+     * Get a Datetime from a timeuuid string.
      *
      * @param string $uuid
      *
@@ -21,32 +21,32 @@ class Type
      */
     public static function getDateTimeFromTimeuuidString($uuid)
     {
-        $str = preg_replace("/[^a-f0-9]/is", "", $uuid); // delete non hexadecimal
+        $str = preg_replace('/[^a-f0-9]/is', '', $uuid); // delete non hexadecimal
 
         if (strlen($str) !== (self::UUID_LENGTH * 2)) {
-            return null;
+            return;
         }
 
-        $bin = pack("H*", $str);
+        $bin = pack('H*', $str);
 
         if (ord($bin[6]) >> 4 == 1) {
             // Restore contiguous big-endian byte order
             $time = bin2hex($bin[6].$bin[7].$bin[4].$bin[5].$bin[0].$bin[1].$bin[2].$bin[3]);
 
             // Clear version flag
-            $time[0] = "0";
+            $time[0] = '0';
 
             // Do some reverse arithmetic to get a Unix timestamp
             $time = (hexdec($time) - self::INTERVAL) / 10000000;
 
             // in case of bad uuid time can be negative
             if ($time < 0) {
-                return null;
+                return;
             }
 
             return \DateTime::createFromFormat('U', floor($time));
         }
 
-        return null;
+        return;
     }
 }

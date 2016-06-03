@@ -5,7 +5,7 @@ namespace CassandraBundle;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
- * Class CassandraBundle
+ * Class CassandraBundle.
  */
 class CassandraBundle extends Bundle
 {

@@ -7,7 +7,7 @@ use CassandraBundle\EventDispatcher\CassandraEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Class FutureResponse
+ * Class FutureResponse.
  *
  * Handle future response for dispatching event when request is complete
  */
@@ -35,8 +35,8 @@ class FutureResponse implements Future
      */
     public function __construct(Future $future, CassandraEvent $event, EventDispatcherInterface $eventDispatcher)
     {
-        $this->future          = $future;
-        $this->event           = $event;
+        $this->future = $future;
+        $this->event = $event;
         $this->eventDispatcher = $eventDispatcher;
     }
 

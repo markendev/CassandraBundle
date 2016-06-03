@@ -8,31 +8,31 @@ use Symfony\Component\HttpFoundation\Request;
 use CassandraBundle\EventDispatcher\CassandraEvent;
 
 /**
- * Collect information about cassandra command
+ * Collect information about cassandra command.
  */
 class CassandraDataCollector extends DataCollector
 {
     /**
-     * Human readable values for consistency
+     * Human readable values for consistency.
      *
      * @var array
      */
-    static protected $consistency = [
-        \Cassandra::CONSISTENCY_ANY          => 'any',
-        \Cassandra::CONSISTENCY_ONE          => 'one',
-        \Cassandra::CONSISTENCY_TWO          => 'two',
-        \Cassandra::CONSISTENCY_THREE        => 'three',
-        \Cassandra::CONSISTENCY_QUORUM       => 'quorum',
-        \Cassandra::CONSISTENCY_ALL          => 'all',
+    protected static $consistency = [
+        \Cassandra::CONSISTENCY_ANY => 'any',
+        \Cassandra::CONSISTENCY_ONE => 'one',
+        \Cassandra::CONSISTENCY_TWO => 'two',
+        \Cassandra::CONSISTENCY_THREE => 'three',
+        \Cassandra::CONSISTENCY_QUORUM => 'quorum',
+        \Cassandra::CONSISTENCY_ALL => 'all',
         \Cassandra::CONSISTENCY_LOCAL_QUORUM => 'local quorum',
-        \Cassandra::CONSISTENCY_EACH_QUORUM  => 'each quorum',
-        \Cassandra::CONSISTENCY_SERIAL       => 'serial',
+        \Cassandra::CONSISTENCY_EACH_QUORUM => 'each quorum',
+        \Cassandra::CONSISTENCY_SERIAL => 'serial',
         \Cassandra::CONSISTENCY_LOCAL_SERIAL => 'local serial',
-        \Cassandra::CONSISTENCY_LOCAL_ONE    => 'local one'
+        \Cassandra::CONSISTENCY_LOCAL_ONE => 'local one',
     ];
 
     /**
-     * Construct the data collector
+     * Construct the data collector.
      */
     public function __construct()
     {
@@ -40,7 +40,8 @@ class CassandraDataCollector extends DataCollector
     }
 
     /**
-     * Collect the data
+     * Collect the data.
+     *
      * @param Request    $request   The request object
      * @param Response   $response  The response object
      * @param \Exception $exception An exception
@@ -50,7 +51,7 @@ class CassandraDataCollector extends DataCollector
     }
 
     /**
-     * Return the name of the collector
+     * Return the name of the collector.
      *
      * @return string data collector name
      */
@@ -60,7 +61,7 @@ class CassandraDataCollector extends DataCollector
     }
 
     /**
-     * Collect data for casandra command
+     * Collect data for casandra command.
      *
      * Listen for cassandra event
      *
@@ -69,18 +70,18 @@ class CassandraDataCollector extends DataCollector
     public function onCassandraCommand(CassandraEvent $event)
     {
         $data = [
-            'keyspace'         => $event->getKeyspace(),
-            'command'          => $event->getCommand(),
-            'argument'         => $this->getArguments($event),
+            'keyspace' => $event->getKeyspace(),
+            'command' => $event->getCommand(),
+            'argument' => $this->getArguments($event),
             'executionOptions' => $this->getExecutionOptions($event),
-            'executionTime'    => $event->getExecutionTime()
+            'executionTime' => $event->getExecutionTime(),
         ];
 
         $this->data['cassandra']->enqueue($data);
     }
 
     /**
-     * Return cassandra command list
+     * Return cassandra command list.
      *
      * @return array
      */
@@ -90,7 +91,7 @@ class CassandraDataCollector extends DataCollector
     }
 
     /**
-     * Return the total time spent by cassandra commands
+     * Return the total time spent by cassandra commands.
      *
      * @return float
      */
@@ -104,7 +105,7 @@ class CassandraDataCollector extends DataCollector
     }
 
     /**
-     * Return average time spent by cassandra command
+     * Return average time spent by cassandra command.
      *
      * @return float
      */
@@ -112,11 +113,11 @@ class CassandraDataCollector extends DataCollector
     {
         $totalExecutionTime = $this->getTotalExecutionTime();
 
-        return ($totalExecutionTime) ? ($totalExecutionTime / count($this->getCommands()) ) : 0;
+        return ($totalExecutionTime) ? ($totalExecutionTime / count($this->getCommands())) : 0;
     }
 
     /**
-     * Get argument to display in datacollector panel
+     * Get argument to display in datacollector panel.
      *
      * @param CassandraEvent $event
      *
@@ -134,7 +135,7 @@ class CassandraDataCollector extends DataCollector
     }
 
     /**
-     * Return the cassandra options defined at runtime
+     * Return the cassandra options defined at runtime.
      *
      * @param CassandraEvent $event
      *
@@ -146,28 +147,27 @@ class CassandraDataCollector extends DataCollector
 
         if (empty($arguments[1])) {
             return [
-                'consistency'       => '',
+                'consistency' => '',
                 'serialConsistency' => '',
-                'pageSize'          => '',
-                'timeout'           => '',
-                'arguments'         => ''
+                'pageSize' => '',
+                'timeout' => '',
+                'arguments' => '',
             ];
         }
 
         $options = $arguments[1];
 
         return [
-            'consistency'       => self::getConsistency($options->consistency),
+            'consistency' => self::getConsistency($options->consistency),
             'serialConsistency' => self::getConsistency($options->serialConsistency),
-            'pageSize'          => $options->pageSize,
-            'timeout'           => $options->timeout,
-            'arguments'         => var_export($options->arguments, true)
+            'pageSize' => $options->pageSize,
+            'timeout' => $options->timeout,
+            'arguments' => var_export($options->arguments, true),
         ];
-
     }
 
     /**
-     * Get human readable value of consistency
+     * Get human readable value of consistency.
      *
      * @param int $intval
      *
@@ -179,6 +179,6 @@ class CassandraDataCollector extends DataCollector
             return self::$consistency[$intval];
         }
 
-        return null;
+        return;
     }
 }
