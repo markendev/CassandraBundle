@@ -1,32 +1,40 @@
 {
-  "name": "hendrahuang/cassandra-bundle",
-  "type" : "symfony-bundle",
-  "description": "Symfony2 bundle on top of datastax/php-driver",
-  "keywords": ["cassandra", "bundle"],
-  "license" : "MIT",
-  "authors": [
-    {
-      "name": "Hendra-Huang",
-      "email" : "hendrahuang92@gmail.com"
-    }
-  ],
-  "require": {
-    "php": ">=5.5",
-    "ext-cassandra": "*"
-  },
-  "require-dev": {
-    "atoum/atoum": "~2.0",
-    "symfony/dependency-injection": "~2.3",
-    "symfony/event-dispatcher": "~2.3",
-    "symfony/config" : "~2.3",
-    "symfony/yaml" : "~2.3",
-    "datastax/php-driver": "dev-master"
-  },
-  "autoload": {
-    "psr-4": {"CassandraBundle\\": "src/"}
-  },
-  "config": {
-    "bin-dir": "bin/"
-  },
-  "minimum-stability": "dev"
+    "name": "hendrahuang/cassandra-bundle",
+    "type" : "symfony-bundle",
+    "description": "Symfony2 / Symfony 3 bundle on top of datastax/php-driver",
+    "keywords": ["cassandra", "bundle", "symfony2", "symfony3"],
+    "license" : "MIT",
+    "authors": [
+        {
+            "name": "Hendra Huang",
+            "email": "hendrahuang92@gmail.com"
+        },
+        {
+            "name": "Indra Gunawan",
+            "email": "hello@indra.my.id"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.9",
+        "ext-cassandra": "*"
+    },
+    "require-dev": {
+        "atoum/atoum": "~2.0",
+        "symfony/framework-bundle": "~2.3|~3.0",
+        "symfony/yaml": "~2.3|~3.0",
+        "symfony/console": "~2.3|~3.0",
+        "datastax/php-driver": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "CassandraBundle\\": ""
+        },
+        "exclude-from-classmap": [
+            "**/Tests/"
+        ]
+    },
+    "config": {
+        "bin-dir": "bin/"
+    },
+    "minimum-stability": "dev"
 }
