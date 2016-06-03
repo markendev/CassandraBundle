@@ -21,7 +21,7 @@ class SchemaManager
 
     public function createTable($name, $fields, $primaryKeyFields = [])
     {
-        $fieldsWithType = array_map(function ($field) { return $field['columnName'].' '.$field['type'] });
+        $fieldsWithType = array_map(function ($field) { return $field['columnName'].' '.$field['type']; });
         $primaryKeyCQL = '';
         if (count($primaryKeyFields) > 0) {
             $primaryKeyCQL = sprintf(',PRIMARY KEY (%s)', implode(',', $primaryKeyFields));

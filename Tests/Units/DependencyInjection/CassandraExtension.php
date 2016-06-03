@@ -271,6 +271,7 @@ class CassandraExtension extends test
         $parameterBag = new ParameterBag(array('kernel.debug' => true));
         $container = new ContainerBuilder($parameterBag);
         $container->set('event_dispatcher', new \mock\Symfony\Component\EventDispatcher\EventDispatcherInterface());
+        $container->set('logger', new \mock\Psr\Log\LoggerInterface());
         $container->registerExtension($extension);
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../Fixtures/'));

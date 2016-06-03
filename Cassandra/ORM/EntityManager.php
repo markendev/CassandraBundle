@@ -7,7 +7,7 @@ use Cassandra\ExecutionOptions;
 use Cassandra\Session;
 use Cassandra\Statement;
 use CassandraBundle\Cassandra\Connection;
-use CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactoryInterface;
+use CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactory;
 use CassandraBundle\EventDispatcher\CassandraEvent;
 use Psr\Log\LoggerInterface;
 
@@ -22,13 +22,13 @@ class EntityManager implements Session, EntityManagerInterface
     const STATEMENT = 'statement';
     const ARGUMENTS = 'arguments';
 
-    public function __construct(Connection $connection, ClassMetadataFactoryInterface $metadataFactory, LoggerInterface $logger)
+    public function __construct(Connection $connection, LoggerInterface $logger)
     {
         $this->connection = $connection;
-        $this->metadataFactory = $metadataFactory;
         $this->logger = $logger;
-        $this->statements = [];
+        $this->metadataFactory = new ClassMetadataFactory();
         $this->schemaManager = new SchemaManager($connection);
+        $this->statements = [];
     }
 
     public function getConnection()

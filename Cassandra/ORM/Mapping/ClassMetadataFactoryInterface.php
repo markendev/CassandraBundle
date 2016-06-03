@@ -8,14 +8,6 @@ namespace CassandraBundle\Cassandra\ORM\Mapping;
 interface ClassMetadataFactoryInterface
 {
     /**
-     * Forces the factory to load the metadata of all classes known to the underlying
-     * mapping driver.
-     *
-     * @return array The ClassMetadata instances of all mapped classes.
-     */
-    public function getAllMetadata();
-
-    /**
      * Gets the class metadata descriptor for a class.
      *
      * @param string $className The name of the class.
