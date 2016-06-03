@@ -37,7 +37,7 @@ class CassandraExtension extends Extension
 
     protected function ormLoad(ContainerBuilder $container, $connectionId, array $config)
     {
-        $class = 'CassandraBundle\Cassandra\Connection';
+        $class = "CassandraBundle\\Cassandra\\Connection";
         $definition = new Definition($class);
         $definition->addArgument($config);
         $definition->setConfigurator(['CassandraBundle\Cassandra\Configurator', 'buildCluster']);

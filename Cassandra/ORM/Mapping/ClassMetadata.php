@@ -62,9 +62,8 @@ class ClassMetadata
      * following entries:
      *
      * name => <tableName>
-     * schema => <schemaName>
      * indexes => array
-     * uniqueConstraints => array
+     * primaryKeys => array
      *
      * @var array
      */
