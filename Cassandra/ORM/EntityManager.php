@@ -84,16 +84,17 @@ class EntityManager implements Session, EntityManagerInterface
      */
     public function insert($entity)
     {
-        $values = $this->readColumn($entity);
-        $tableName = $this->getTableName($entity);
-        $fields = array_keys($values);
+        $metadata = $this->getClassMetadata(get_class($entity));
+        $tableName = $metadata->table['name'];
+        $values = $this->readColumn($entity, $metadata);
+        $columns = array_keys($values);
 
         $statement = sprintf(
             'INSERT INTO "%s"."%s" (%s) VALUES (%s)',
             $this->getKeyspace(),
             $tableName,
-            implode(', ', $fields),
-            implode(', ', array_map(function () { return '?'; }, $fields))
+            implode(', ', $columns),
+            implode(', ', array_map(function () { return '?'; }, $columns))
         );
 
         $this->statements[] = [
@@ -109,18 +110,18 @@ class EntityManager implements Session, EntityManagerInterface
      */
     public function update($entity)
     {
-        $tableName = $this->getTableName($entity);
-        $values = $this->readColumn($entity);
+        $metadata = $this->getClassMetadata(get_class($entity));
+        $tableName = $metadata->table['name'];
+        $values = $this->readColumn($entity, $metadata);
         $id = $values['id'];
         unset($values['id']);
-
-        $fields = array_keys($values);
+        $columns = array_keys($values);
 
         $statement = sprintf(
             'UPDATE "%s"."%s" SET %s WHERE id = ?',
             $this->getKeyspace(),
             $tableName,
-            implode(', ', array_map(function ($val) { return sprintf('%s = ?', $val); }, $fields))
+            implode(', ', array_map(function ($column) { return sprintf('%s = ?', $column); }, $columns))
         );
 
         $this->statements[] = [
@@ -136,7 +137,8 @@ class EntityManager implements Session, EntityManagerInterface
      */
     public function delete($entity)
     {
-        $tableName = $this->getTableName($entity);
+        $metadata = $this->getClassMetadata(get_class($entity));
+        $tableName = $metadata->table['name'];
 
         $statement = sprintf(
             'DELETE FROM "%s"."%s" WHERE id = ?',
@@ -146,7 +148,7 @@ class EntityManager implements Session, EntityManagerInterface
 
         $this->statements[] = [
             self::STATEMENT => $statement,
-            self::ARGUMENTS => ['id' => new Cassandra\Uuid($entity->getId())],
+            self::ARGUMENTS => ['id' => new \Cassandra\Uuid($entity->getId())],
         ];
     }
 
@@ -157,21 +159,17 @@ class EntityManager implements Session, EntityManagerInterface
     {
         if (count($this->statements)) {
             $this->logger->debug('CASSANDRA: BEGIN');
-            $batch = new BatchStatement(Cassandra::BATCH_LOGGED);
+            $batch = new BatchStatement(\Cassandra::BATCH_LOGGED);
 
             foreach ($this->statements as $statement) {
                 $this->logger->debug('CASSANDRA: '.$statement[self::STATEMENT].' => ['.implode(', ', $statement[self::ARGUMENTS]).']');
-                if ($async) {
-                    $batch->add($this->prepareAsync($statement[self::STATEMENT]), $statement[self::ARGUMENTS]);
-                } else {
-                    $batch->add($this->prepare($statement[self::STATEMENT]), $statement[self::ARGUMENTS]);
-                }
+                $batch->add($this->prepare($statement[self::STATEMENT]), $statement[self::ARGUMENTS]);
             }
 
             if ($async) {
-                $session->executeAsync($batch);
+                $this->executeAsync($batch);
             } else {
-                $session->execute($batch);
+                $this->execute($batch);
             }
             $this->logger->debug('CASSANDRA: END');
             $this->statements = [];
@@ -185,19 +183,11 @@ class EntityManager implements Session, EntityManagerInterface
      *
      * @return []
      */
-    private function readColumn($entity)
+    private function readColumn($entity, $metadata)
     {
-        $values = [];
-        $reflectionClass = new \ReflectionClass($entity);
-
-        foreach ($reflectionClass->getProperties() as $reflectionProperty) {
-            $columnAnnotation = $this->reader->getPropertyAnnotation($reflectionProperty, self::ANNOTATION_CASSANDRA_COLUMN_CLASS);
-            if ($columnAnnotation) {
-                $value = $entity->{'get'.ucwords($reflectionProperty->name)}();
-                if ($value) {
-                    $values[$columnAnnotation->name] = $this->encodeColumnType($columnAnnotation->type, $value);
-                }
-            }
+        foreach ($metadata->fieldMappings as $field) {
+            $getterMethod = 'get'.ucfirst($field['fieldName']);
+            $values[$field['columnName']] = $this->encodeColumnType($field['type'], $entity->{$getterMethod}());
         }
 
         return $values;
@@ -215,28 +205,12 @@ class EntityManager implements Session, EntityManagerInterface
     {
         switch ($type) {
             case 'uuid':
-                return new Cassandra\Uuid($value);
-                break;
+                return new \Cassandra\Uuid($value);
             case 'float':
-                return new Cassandra\Float($value);
+                return new \Cassandra\Float($value);
             default:
                 return $value;
-                break;
         }
-    }
-
-    /**
-     * Return table name of $entity.
-     *
-     * @param object $entity
-     *
-     * @return string
-     */
-    private function getTableName($entity)
-    {
-        $tableName = (new \ReflectionClass($entity))->getShortName();
-
-        return strtolower(preg_replace('/([^A-Z])([A-Z])/', '$1_$2', $tableName));
     }
 
     /**

@@ -24,14 +24,14 @@ class CassandraExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        foreach ($config['connections'] as $connectionId => $connectionConfig) {
-            $connectionConfig['dispatch_events'] = $config['dispatch_events'];
-            $this->ormLoad($container, $connectionId, $connectionConfig);
-        }
-
         if ($container->getParameter('kernel.debug')) {
             $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
             $loader->load('services.yml');
+        }
+
+        foreach ($config['connections'] as $connectionId => $connectionConfig) {
+            $connectionConfig['dispatch_events'] = $config['dispatch_events'];
+            $this->ormLoad($container, $connectionId, $connectionConfig);
         }
     }
 
