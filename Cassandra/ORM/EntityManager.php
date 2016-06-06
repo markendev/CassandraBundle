@@ -6,6 +6,7 @@ use Cassandra\BatchStatement;
 use Cassandra\ExecutionOptions;
 use Cassandra\Session;
 use Cassandra\Statement;
+use Cassandra\Type;
 use CassandraBundle\Cassandra\Connection;
 use CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactoryInterface;
 use CassandraBundle\EventDispatcher\CassandraEvent;
@@ -162,7 +163,18 @@ class EntityManager implements Session, EntityManagerInterface
             $batch = new BatchStatement(\Cassandra::BATCH_LOGGED);
 
             foreach ($this->statements as $statement) {
-                $this->logger->debug('CASSANDRA: '.$statement[self::STATEMENT].' => ['.implode(', ', $statement[self::ARGUMENTS]).']');
+                $argumentsString = '[';
+                foreach ($statement[self::ARGUMENTS] as $argument) {
+                    try {
+                        $argumentsString .= (string)$argument;
+                    } catch (\Exception $e) {
+                        // logging for Cassandra\Set and Cassandra\Map class
+                        $argumentsString .= sprintf('[%s]', implode(',', $argument->values()));
+                    }
+                    $argumentsString .= ',';
+                }
+                $argumentsString = substr($argumentsString, 0, -1).']';
+                $this->logger->debug('CASSANDRA: '.$statement[self::STATEMENT].' => '.$argumentsString);
                 $batch->add($this->prepare($statement[self::STATEMENT]), $statement[self::ARGUMENTS]);
             }
 
@@ -201,16 +213,41 @@ class EntityManager implements Session, EntityManagerInterface
      *
      * @return mixed
      */
-    private function encodeColumnType($type, $value)
+    private function encodeColumnType($type, $value = null)
     {
-        switch ($type) {
-            case 'uuid':
-                return new \Cassandra\Uuid($value);
-            case 'float':
-                return new \Cassandra\Float($value);
-            default:
-                return $value;
+        if (preg_match('/set\<(.+)\>/', $type, $matches)) {
+            $subType = $matches[1];
+            $set = new \Cassandra\Set($this->encodeColumnType($subType));
+            if ($value) {
+                foreach ($value as $_value) {
+                    $set->add($this->encodeColumnType($subType, $_value));
+                }
+            }
+
+            return $set;
         }
+        if (preg_match('/map\<(.+),\ *(.+)\>/', $type, $matches)) {
+            $keyType = $matches[1];
+            $valueType = $matches[2];
+            $map = new \Cassandra\Map($this->encodeColumnType($keyType), $this->encodeColumnType($valueType));
+            if ($value) {
+                foreach ($value as $_key => $_value) {
+                    $map->set($this->encodeColumnType($keyType, $_key), $this->encodeColumnType($valueType, $_value));
+                }
+            }
+
+            return $map;
+        }
+        if (method_exists('\Cassandra\Type', $type)) {
+            $cassandraType = Type::{$type}();
+            if ($value) {
+                return $cassandraType->create($value);
+            }
+
+            return $cassandraType;
+        }
+
+        return $value;
     }
 
     /**
