@@ -51,8 +51,10 @@ class SchemaCreateCommand extends ContainerAwareCommand
                 $tableName = $metadata->table['name'];
                 $primaryKeys = isset($metadata->table['primaryKeys']) ? $metadata->table['primaryKeys'] : ['id'];
 
-                $schemaManager->dropTable($tableName);
-                $schemaManager->createTable($tableName, $metadata->fieldMappings, $primaryKeys);
+                if ($tableName) {
+                    $schemaManager->dropTable($tableName);
+                    $schemaManager->createTable($tableName, $metadata->fieldMappings, $primaryKeys);
+                }
             }
         }
 
