@@ -9,7 +9,9 @@ use Cassandra\Statement;
 use Cassandra\Type;
 use CassandraBundle\Cassandra\Connection;
 use CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactoryInterface;
+use CassandraBundle\Cassandra\ORM\Repository\DefaultRepositoryFactory;
 use CassandraBundle\EventDispatcher\CassandraEvent;
+use Doctrine\Common\Collections\ArrayCollection;
 use Psr\Log\LoggerInterface;
 
 class EntityManager implements Session, EntityManagerInterface
@@ -18,6 +20,7 @@ class EntityManager implements Session, EntityManagerInterface
     private $metadataFactory;
     private $logger;
     private $statements;
+    private $repositoryFactory;
     private $schemaManager;
 
     const STATEMENT = 'statement';
@@ -29,6 +32,7 @@ class EntityManager implements Session, EntityManagerInterface
         $this->logger = $logger;
         $this->metadataFactory = $metadataFactory;
         $this->schemaManager = new SchemaManager($connection);
+        $this->repositoryFactory = new DefaultRepositoryFactory();
         $this->statements = [];
     }
 
@@ -76,6 +80,18 @@ class EntityManager implements Session, EntityManagerInterface
     public function getClassMetadata($className)
     {
         return $this->metadataFactory->getMetadataFor($className);
+    }
+
+    /**
+     * Gets the repository for an entity class.
+     *
+     * @param string $entityName The name of the entity.
+     *
+     * @return \CassandraBundle\Cassandra\ORM\EntityRepository The repository class.
+     */
+    public function getRepository($entityName)
+    {
+        return $this->repositoryFactory->getRepository($this, $entityName);
     }
 
     /**
@@ -165,11 +181,11 @@ class EntityManager implements Session, EntityManagerInterface
             foreach ($this->statements as $statement) {
                 $argumentsString = '[';
                 foreach ($statement[self::ARGUMENTS] as $argument) {
-                    try {
-                        $argumentsString .= (string)$argument;
-                    } catch (\Exception $e) {
-                        // logging for Cassandra\Set and Cassandra\Map class
-                        $argumentsString .= sprintf('[%s]', implode(',', $argument->values()));
+                    $value = $this->decodeColumnType($argument);
+                    if (is_array($value)) {
+                        $argumentsString .= sprintf('[%s]', implode(',', $value));
+                    } else {
+                        $argumentsString .= $value;
                     }
                     $argumentsString .= ',';
                 }
@@ -248,6 +264,99 @@ class EntityManager implements Session, EntityManagerInterface
         }
 
         return $value;
+    }
+
+    private function decodeColumnType($columnValue)
+    {
+        try {
+            return (string)$columnValue;
+        } catch (\Exception $e) {
+            // Cassandra\Map class
+            if ($columnValue instanceOf \Cassandra\Map) {
+                $decodedKeys = [];
+                foreach ($columnValue->keys() as $key) {
+                    $decodedKeys[] = $this->decodeColumnType($key);
+                }
+                $decodedValues = [];
+                foreach ($columnValue->values() as $value) {
+                    $decodedValues[] = $this->decodeColumnType($value);
+                }
+
+                return array_combine($decodedKeys, $decodedValues);
+            }
+            // Cassandra\Set class
+            if ($columnValue instanceOf \Cassandra\Set) {
+                $decodedValues = [];
+                foreach ($columnValue->values() as $value) {
+                    $decodedValues[] = $this->decodeColumnType($value);
+                }
+
+                return $decodedValues;
+            }
+
+            return $columnValue->values();
+        }
+
+        return $columnValue;
+    }
+
+    private function cleanRow($cassandraRow)
+    {
+        $cleanRow = [];
+        foreach ($cassandraRow as $name => $value) {
+            $cleanRow[$name] = $this->decodeColumnType($value);
+        }
+
+        return $cleanRow;
+    }
+
+    /**
+     * Finds an Entity by its identifier.
+     *
+     * @param string       $tableName   The table name of the entity to find.
+     * @param mixed        $id          The identity of the entity to find.
+     *
+     * @return object|null The entity instance or NULL if the entity can not be found.
+     */
+    public function find($tableName, $id)
+    {
+        if ($id) {
+            $query = sprintf('SELECT * FROM %s WHERE id = ?', $tableName);
+            $statement = $this->prepare($query);
+            $arguments = new ExecutionOptions([self::ARGUMENTS => ['id' => new \Cassandra\Uuid($id)]]);
+            $result = $this->execute($statement, $arguments);
+
+            $this->logger->debug('CASSANDRA: '.$query.' => ['.$id.']');
+
+            if ($data = $result->first()) {
+                return $this->cleanRow($data);
+            }
+        }
+
+        return;
+    }
+
+    /**
+     * Finds all entities
+     *
+     * @param string       $tableName   The class name of the entity to find.
+     *
+     * @return ArrayCollection The array of entity instance or empty array if the entity can not be found.
+     */
+    public function findAll($tableName)
+    {
+        $query = sprintf('SELECT * FROM %s', $tableName);
+        $statement = $this->prepare($query);
+        $result = $this->execute($statement);
+
+        $this->logger->debug('CASSANDRA: '.$query);
+
+        $entities = new ArrayCollection();
+        foreach ($result as $data) {
+            $entities[] = $this->cleanRow($data);
+        }
+
+        return $entities;
     }
 
     /**

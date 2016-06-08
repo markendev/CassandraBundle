@@ -174,6 +174,6 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
      */
     protected function getFqcnFromAlias($namespaceAlias, $simpleClassName)
     {
-        return $namespaceAlias.'\\'.$simpleClassName;
+        return $namespaceAlias."\\Entity\\".$simpleClassName;
     }
 }

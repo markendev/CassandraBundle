@@ -2,8 +2,6 @@
 
 namespace CassandraBundle\Cassandra\ORM;
 
-use Doctrine\Common\Collections\ArrayCollection;
-
 /**
  * An EntityRepository serves as a repository for entities with generic as well as
  * business specific methods for retrieving entities.
@@ -17,6 +15,11 @@ class EntityRepository
      * @var string
      */
     protected $_entityName;
+
+    /**
+     * @var string
+     */
+    protected $_tableName;
 
     /**
      * @var EntityManager
@@ -37,6 +40,7 @@ class EntityRepository
     public function __construct($em, Mapping\ClassMetadata $class)
     {
         $this->_entityName = $class->name;
+        $this->_tableName = $class->table['name'];
         $this->_em = $em;
         $this->_class = $class;
     }
@@ -49,42 +53,16 @@ class EntityRepository
      */
     public function find($id)
     {
-        return $this->_em->find($this->_entityName, $id, $lockMode, $lockVersion);
-        if ($id) {
-            $query = sprintf('SELECT * FROM %s WHERE id = ?', $this->_class->table['name']);
-            $statement = $this->_em->prepare($query);
-            $arguments = new Cassandra\ExecutionOptions(['arguments' => ['id' => new Cassandra\Uuid($id)]]);
-            $result = $this->_em->execute($statement, $arguments);
-
-            $this->logger->debug('CASSANDRA: '.$query.' => ['.$id.']');
-
-            if (($data = $result->first())) {
-                return $result;
-                //return $this->serializer->deserialize(json_encode($this->cleanRow($data)), $class, 'json');
-            }
-        }
-
-        return;
+        return $this->_em->find($this->_tableName, $id);
     }
 
     /**
      * @param string $class
      *
-     * @return [ArrayCollection]
+     * @return ArrayCollection
      */
     public function findAll()
     {
-        $query = sprintf('SELECT * FROM %s', $this->_class->table['name']);
-        $statement = $this->_em->prepare($query);
-        $result = $this->_em->execute($statement);
-
-        $this->logger->debug('CASSANDRA: '.$query);
-
-        $entities = new ArrayCollection();
-        foreach ($result as $data) {
-            $entities[] = $data;
-        }
-
-        return $entities;
+        return $this->_em->findAll($this->_tableName);
     }
 }
