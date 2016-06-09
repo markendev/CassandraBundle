@@ -15,6 +15,7 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
     const ANNOTATION_CASSANDRA_TABLE_CLASS = \CassandraBundle\Cassandra\ORM\Mapping\Table::class;
     const ANNOTATION_CASSANDRA_COLUMN_CLASS = \CassandraBundle\Cassandra\ORM\Mapping\Column::class;
 
+    private $mappingsConfig;
     private $reader;
 
     /**
@@ -22,8 +23,9 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
      */
     private $loadedMetadata = [];
 
-    public function __construct(Reader $reader)
+    public function __construct(array $mappingsConfig, Reader $reader)
     {
+        $this->mappingsConfig = $mappingsConfig;
         $this->reader = $reader;
     }
 
@@ -169,11 +171,17 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
 
     /**
      * Return fully qualified class name.
-     *
-     * @TODO: Resolve fqcn for AcmeAppBundle to Acme\\AppBundle
      */
     protected function getFqcnFromAlias($namespaceAlias, $simpleClassName)
     {
-        return $namespaceAlias."\\Entity\\".$simpleClassName;
+        if (count($this->mappingsConfig) <= 0) {
+            return $namespaceAlias."\\Entity\\".$simpleClassName;
+        }
+
+        foreach ($this->mappingsConfig as $name => $config) {
+            if ($namespaceAlias == $name) {
+                return $config['prefix']."\\".$simpleClassName;
+            }
+        }
     }
 }

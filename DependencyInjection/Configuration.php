@@ -85,6 +85,21 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
+                ->arrayNode('orm')
+                    ->children()
+                        ->arrayNode('mappings')
+                            ->requiresAtLeastOneElement()
+                            ->useAttributeAsKey('name')
+                            ->prototype('array')
+                                ->treatNullLike(array())
+                                ->performNoDeepMerging()
+                                ->children()
+                                    ->scalarNode('prefix')->isRequired()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
             ->end();
 
         return $treeBuilder;

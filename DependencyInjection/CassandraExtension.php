@@ -29,10 +29,21 @@ class CassandraExtension extends Extension
             $loader->load('services.yml');
         }
 
+        if (isset($config['orm']) && $config['orm'] && $config['orm']['mappings']) {
+            $this->metadataFactoryLoad($container, $config['orm']['mappings']);
+        }
         foreach ($config['connections'] as $connectionId => $connectionConfig) {
             $connectionConfig['dispatch_events'] = $config['dispatch_events'];
             $this->ormLoad($container, $connectionId, $connectionConfig);
         }
+    }
+
+    protected function metadataFactoryLoad(ContainerBuilder $container, array $config)
+    {
+        $container
+            ->register('cassandra.factory.metadata', "CassandraBundle\\Cassandra\\ORM\\Mapping\\ClassMetadataFactory")
+            ->addArgument($config)
+            ->addArgument(new Reference('annotation_reader'));
     }
 
     protected function ormLoad(ContainerBuilder $container, $connectionId, array $config)
