@@ -34,4 +34,16 @@ class SchemaManager
     {
         $this->_exec(sprintf('DROP TABLE IF EXISTS %s', $name));
     }
+
+    public function createIndexes($tableName, $indexes)
+    {
+        foreach ($indexes as $index) {
+            $this->createIndex($tableName, $index);
+        }
+    }
+
+    public function createIndex($tableName, $index)
+    {
+        $this->_exec(sprintf('CREATE INDEX ON %s (%s)', $tableName, $index));
+    }
 }

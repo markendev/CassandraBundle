@@ -49,11 +49,13 @@ class SchemaCreateCommand extends ContainerAwareCommand
                 $className = str_replace('/', '\\', preg_replace('/(.*src\/)(.*).php/', '$2', $sourceFile));
                 $metadata = $em->getClassMetadata($className);
                 $tableName = $metadata->table['name'];
-                $primaryKeys = isset($metadata->table['primaryKeys']) ? $metadata->table['primaryKeys'] : ['id'];
+                $indexes = $metadata->table['indexes'];
+                $primaryKeys = $metadata->table['primaryKeys'];
 
                 if ($tableName) {
                     $schemaManager->dropTable($tableName);
                     $schemaManager->createTable($tableName, $metadata->fieldMappings, $primaryKeys);
+                    $schemaManager->createIndexes($tableName, $indexes);
                 }
             }
         }

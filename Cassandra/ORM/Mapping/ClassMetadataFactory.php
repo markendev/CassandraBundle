@@ -127,6 +127,8 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
         if ($classAnnotation) {
             $classMetadata->customRepositoryClassName = $classAnnotation->repositoryClass;
             $classMetadata->table['name'] = $classAnnotation->name ?: strtolower(preg_replace('/([^A-Z])([A-Z])/', '$1_$2', $reflectionClass->getShortName()));
+            $classMetadata->table['indexes'] = $classAnnotation->indexes;
+            $classMetadata->table['primaryKeys'] = $classAnnotation->primaryKeys;
         }
 
         // Save the field mapping to metadata

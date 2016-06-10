@@ -19,4 +19,14 @@ final class Table extends Annotation
      * @var string
      */
     public $name;
+
+    /**
+     * @var array
+     */
+    public $indexes = [];
+
+    /**
+     * @var array
+     */
+    public $primaryKeys = ['id'];
 }

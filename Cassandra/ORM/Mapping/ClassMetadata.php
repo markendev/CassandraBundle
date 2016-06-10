@@ -12,15 +12,6 @@ class ClassMetadata
     public $name;
 
     /**
-     * READ-ONLY: The namespace the entity class is contained in.
-     *
-     * @var string
-     *
-     * @todo Not really needed. Usage could be localized.
-     */
-    public $namespace;
-
-    /**
      * The name of the custom repository class used for the entity class.
      * (Optional).
      *
