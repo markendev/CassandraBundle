@@ -29,9 +29,12 @@ class CassandraExtension extends Extension
             $loader->load('services.yml');
         }
 
+        $mappingsConfig = [];
         if (isset($config['orm']) && $config['orm'] && $config['orm']['mappings']) {
-            $this->metadataFactoryLoad($container, $config['orm']['mappings']);
+            $mappingsConfig = $config['orm']['mappings'];
         }
+        $this->metadataFactoryLoad($container, $mappingsConfig);
+
         foreach ($config['connections'] as $connectionId => $connectionConfig) {
             $connectionConfig['dispatch_events'] = $config['dispatch_events'];
             $this->ormLoad($container, $connectionId, $connectionConfig);
