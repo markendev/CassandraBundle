@@ -65,4 +65,14 @@ class EntityRepository
     {
         return $this->_em->findAll($this->_tableName);
     }
+
+    public function getOneOrNullResult($statement, $arguments)
+    {
+        return $this->_em->getOneOrNullResult($statement, $arguments);
+    }
+
+    public function getResult($statement, $arguments)
+    {
+        return $this->_em->getResult($statement, $arguments);
+    }
 }

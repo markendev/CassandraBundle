@@ -323,14 +323,11 @@ class EntityManager implements Session, EntityManagerInterface
         if ($id) {
             $query = sprintf('SELECT * FROM %s WHERE id = ?', $tableName);
             $statement = $this->prepare($query);
-            $arguments = new ExecutionOptions([self::ARGUMENTS => ['id' => new \Cassandra\Uuid($id)]]);
-            $result = $this->execute($statement, $arguments);
+            $arguments = $this->prepareArguments(['id' => new \Cassandra\Uuid($id)]);
 
             $this->logger->debug('CASSANDRA: '.$query.' => ['.$id.']');
 
-            if ($data = $result->first()) {
-                return $this->cleanRow($data);
-            }
+            return $this->getOneOrNullResult($statement, $arguments);
         }
 
         return;
@@ -347,16 +344,36 @@ class EntityManager implements Session, EntityManagerInterface
     {
         $query = sprintf('SELECT * FROM %s', $tableName);
         $statement = $this->prepare($query);
-        $result = $this->execute($statement);
 
         $this->logger->debug('CASSANDRA: '.$query);
 
+        return $this->getResult($statement);
+    }
+
+    public function getOneOrNullResult($statement, ExecutionOptions $options = null)
+    {
+        $result = $this->execute($statement, $options);
+        if ($data = $result->first()) {
+            return $this->cleanRow($data);
+        }
+
+        return;
+    }
+
+    public function getResult($statement, ExecutionOptions $options = null)
+    {
+        $result = $this->execute($statement);
         $entities = new ArrayCollection();
         foreach ($result as $data) {
             $entities[] = $this->cleanRow($data);
         }
 
         return $entities;
+    }
+
+    protected function prepareArguments($arguments)
+    {
+        return new ExecutionOptions([self::ARGUMENTS => $arguments]);
     }
 
     /**
