@@ -2,6 +2,8 @@
 
 namespace CassandraBundle\Cassandra\ORM;
 
+use Cassandra\ExecutionOptions;
+
 /**
  * An EntityRepository serves as a repository for entities with generic as well as
  * business specific methods for retrieving entities.
@@ -43,6 +45,26 @@ class EntityRepository
         $this->_tableName = $class->table['name'];
         $this->_em = $em;
         $this->_class = $class;
+    }
+
+    public function getEntityManager()
+    {
+        return $this->_em;
+    }
+
+    public function getTableName()
+    {
+        return $this->_tableName;
+    }
+
+    public function getEntityName()
+    {
+        return $this->_entityName;
+    }
+
+    public function getClass()
+    {
+        return $this->_class;
     }
 
     /**

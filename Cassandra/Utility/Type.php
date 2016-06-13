@@ -49,4 +49,18 @@ class Type
 
         return;
     }
+
+    public static function transformToCassandraType($type, $value = null)
+    {
+        if (method_exists('\Cassandra\Type', $type)) {
+            $cassandraType = \Cassandra\Type::{$type}();
+            if ($value) {
+                return $cassandraType->create($value);
+            }
+
+            return $cassandraType;
+        }
+
+        return $value;
+    }
 }

@@ -11,6 +11,7 @@ use CassandraBundle\Cassandra\Connection;
 use CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactoryInterface;
 use CassandraBundle\Cassandra\ORM\Repository\DefaultRepositoryFactory;
 use CassandraBundle\EventDispatcher\CassandraEvent;
+use CassandraBundle\Cassandra\Utility\Type;
 use Doctrine\Common\Collections\ArrayCollection;
 use Psr\Log\LoggerInterface;
 
@@ -254,16 +255,8 @@ class EntityManager implements Session, EntityManagerInterface
 
             return $map;
         }
-        if (method_exists('\Cassandra\Type', $type)) {
-            $cassandraType = Type::{$type}();
-            if ($value) {
-                return $cassandraType->create($value);
-            }
 
-            return $cassandraType;
-        }
-
-        return $value;
+        return Type::transformToCassandraType($type, $value);
     }
 
     private function decodeColumnType($columnValue)
@@ -353,7 +346,7 @@ class EntityManager implements Session, EntityManagerInterface
     public function getOneOrNullResult($statement, ExecutionOptions $options = null)
     {
         $result = $this->execute($statement, $options);
-        if ($data = $result->first()) {
+        if ($result && $data = $result->first()) {
             return $this->cleanRow($data);
         }
 
