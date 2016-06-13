@@ -11,7 +11,7 @@ use CassandraBundle\Cassandra\Connection;
 use CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactoryInterface;
 use CassandraBundle\Cassandra\ORM\Repository\DefaultRepositoryFactory;
 use CassandraBundle\EventDispatcher\CassandraEvent;
-use CassandraBundle\Cassandra\Utility\Type;
+use CassandraBundle\Cassandra\Utility\Type as CassandraType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Psr\Log\LoggerInterface;
 
@@ -256,7 +256,7 @@ class EntityManager implements Session, EntityManagerInterface
             return $map;
         }
 
-        return Type::transformToCassandraType($type, $value);
+        return CassandraType::transformToCassandraType($type, $value);
     }
 
     private function decodeColumnType($columnValue)
