@@ -364,7 +364,7 @@ class EntityManager implements Session, EntityManagerInterface
         return $entities;
     }
 
-    protected function prepareArguments($arguments)
+    public function prepareArguments($arguments)
     {
         return new ExecutionOptions([self::ARGUMENTS => $arguments]);
     }
