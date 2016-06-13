@@ -355,7 +355,7 @@ class EntityManager implements Session, EntityManagerInterface
 
     public function getResult($statement, ExecutionOptions $options = null)
     {
-        $result = $this->execute($statement);
+        $result = $this->execute($statement, $options);
         $entities = new ArrayCollection();
         foreach ($result as $data) {
             $entities[] = $this->cleanRow($data);
