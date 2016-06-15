@@ -180,18 +180,7 @@ class EntityManager implements Session, EntityManagerInterface
             $batch = new BatchStatement(\Cassandra::BATCH_LOGGED);
 
             foreach ($this->statements as $statement) {
-                $argumentsString = '[';
-                foreach ($statement[self::ARGUMENTS] as $argument) {
-                    $value = $this->decodeColumnType($argument);
-                    if (is_array($value)) {
-                        $argumentsString .= sprintf('[%s]', implode(',', $value));
-                    } else {
-                        $argumentsString .= $value;
-                    }
-                    $argumentsString .= ',';
-                }
-                $argumentsString = substr($argumentsString, 0, -1).']';
-                $this->logger->debug('CASSANDRA: '.$statement[self::STATEMENT].' => '.$argumentsString);
+                $this->logger->debug('CASSANDRA: '.$statement[self::STATEMENT].' => '.json_encode($statement[self::ARGUMENTS]));
                 $batch->add($this->prepare($statement[self::STATEMENT]), $statement[self::ARGUMENTS]);
             }
 
@@ -232,25 +221,32 @@ class EntityManager implements Session, EntityManagerInterface
      */
     private function encodeColumnType($type, $value = null)
     {
-        if (preg_match('/set\<(.+)\>/', $type, $matches)) {
-            $subType = $matches[1];
-            $set = new \Cassandra\Set($this->encodeColumnType($subType));
+        // Remove frozen keyword
+        $type = preg_replace('/frozen\<(.+)\>/', '$1', $type);
+
+        if (preg_match('/^set\<(.+)\>$/U', $type, $matches)) {
+            $subType = trim($matches[1]);
             if ($value) {
+                $set = new \Cassandra\Set($this->encodeColumnType($subType));
                 foreach ($value as $_value) {
                     $set->add($this->encodeColumnType($subType, $_value));
                 }
+            } else {
+                $set = Type::set($this->encodeColumnType($subType));
             }
 
             return $set;
         }
-        if (preg_match('/map\<(.+),\ *(.+)\>/', $type, $matches)) {
-            $keyType = $matches[1];
-            $valueType = $matches[2];
-            $map = new \Cassandra\Map($this->encodeColumnType($keyType), $this->encodeColumnType($valueType));
+        if (preg_match('/^map\<(.+),\ *(.+)\>$/U', $type, $matches)) {
+            $keyType = trim($matches[1]);
+            $valueType = trim($matches[2]);
             if ($value) {
+                $map = new \Cassandra\Map($this->encodeColumnType($keyType), $this->encodeColumnType($valueType));
                 foreach ($value as $_key => $_value) {
                     $map->set($this->encodeColumnType($keyType, $_key), $this->encodeColumnType($valueType, $_value));
                 }
+            } else {
+                $map = Type::map($this->encodeColumnType($keyType), $this->encodeColumnType($valueType));
             }
 
             return $map;
