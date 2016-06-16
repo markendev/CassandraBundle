@@ -6,15 +6,10 @@ The CassandraBundle provide a Cassandra EntityManager as a Symfony service.
 
 **NOTE :** You need to [install the offical datastax php driver extension](https://github.com/datastax/php-driver)
 
+Install the bundle :
 
-Require the bundle in your composer.json file :
-
-```json
-{
-    "require": {
-        "hendrahuang/cassandra-bundle": "dev-master",
-    }
-}
+```shell
+$ composer require hendrahuang/cassandra-bundle
 ```
 
 Register the bundle in your kernel :
@@ -30,17 +25,13 @@ public function registerBundles()
 }
 ```
 
-Then install the bundle :
-
-```shell
-$ composer update hendrahuang/cassandra-bundle
-```
-
-## Usage
+## Example Usage
 
 Add the `cassandra` section in your configuration file. Here is the minimal configuration required. 
 
 ```yaml
+# app/config/config.yml
+
 cassandra:
     connections:
         default:
@@ -51,24 +42,118 @@ cassandra:
                 - 127.0.0.3
             user: ''
             password: ''
-        
 ```
 
-Then you can ask container for your entity manager :
+```yaml
+# app/config/config_prod.yml
+
+cassandra:
+    dispatch_events: false
+```
+
+Create entity for cassandra schema :
 
 ```php
-$em = $this->get('cassandra.default_entity_manager');
+<?php
 
-// Insertion
-$em->insert($entity);
+namespace AppBundle\Entity;
 
-// Update
-$em->update($entity);
+use CassandraBundle\Cassandra\ORM\Mapping as ORM;
 
-// Deletion
-$em->delete($entity);
+/**
+ * @ORM\Table(
+ *      repositoryClass = "AppBundle\Repository\HotelRepository",
+ *      indexes = {"tags"},
+ * )
+ */
+class Hotel
+{
+    /**
+     * @ORM\Column(name="id", type="uuid")
+     */
+    private $id;
 
-$em->flush();
+    /**
+     * @ORM\Column(name="name", type="text")
+     */
+    private $name;
+
+    /**
+     * @ORM\Column(name="tags", type="set<text>")
+     */
+    private $tags;
+
+    /**
+     * @ORM\Column(name="config", type="map<text, frozen<map<text, text>>>")
+     */
+    private $config;
+
+    // ...
+}
+```
+
+Run console command to create cassandra schema
+
+```shell
+$ bin/console cassandra:schema:create
+```
+**NOTE :** You need to manually create your keyspace in cassandra before running the command
+
+
+You can create repository for custom query :
+
+```php
+<?php
+
+namespace AppBundle\Repository;
+
+use CassandraBundle\Cassandra\Utility\Type as CassandraType;
+
+class HotelRepository extends \CassandraBundle\Cassandra\ORM\EntityRepository
+{
+    public function findByIds($ids = [])
+    {
+        $em = $this->getEntityManager();
+        $cql = sprintf(
+            'SELECT * FROM %s WHERE id IN (%s)', 
+            $this->getTableName(),
+            implode(', ', array_map(function () { return '?'; }, $ids))
+        );
+        $statement = $em->prepare($cql);
+        $arguments = new \Cassandra\ExecutionOptions(['arguments' => array_map(function ($id) { return CassandraType::transformToCassandraType('uuid', $id); }, $ids)]);
+
+        return $this->getResult($statement, $arguments);
+    }
+}
+```
+
+Then you can insert or query data using EntityManager :
+
+```php
+        $em = $this->get('cassandra.default_entity_manager');
+
+        $hotel = new \AppBundle\Entity\Hotel();
+        $hotel->setId('26fd2706-8baf-433b-82eb-8c7fada847da');
+        $hotel->setName('name');
+        $hotel->setTags(['wifi', 'AC']);
+        $now = new \Datetime();
+        $hotel->setConfig([
+            'url' => [
+                'slug' => 'new-hotel',
+            ],
+        ]);
+        $em->insert($hotel); // Insert entity to cassandra
+
+        $em->flush();
+
+        $repository = $em->getRepository('AppBundle:Hotel');
+        $hotels = $repository->findAll(); // Query all hotels
+        $hotels = $repository->findByIds(['26fd2706-8baf-433b-82eb-8c7fada847da', '86fd2706-8baf-433b-82eb-8c7fada847da']); // Query hotels by $ids
+        $hotel = $repository->find('26fd2706-8baf-433b-82eb-8c7fada847da'); // Query hotel by id
+        $hotel->setName('new name');
+        $em->update($hotel); // Update entity
+        
+        $em->flush();
 ```
 
 Bundle provide a util class for extracting Datetime from a timeuuid string. 
