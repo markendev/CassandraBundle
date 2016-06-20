@@ -312,7 +312,13 @@ class EntityManager implements Session, EntityManagerInterface
         if ($id) {
             $query = sprintf('SELECT * FROM %s WHERE id = ?', $tableName);
             $statement = $this->prepare($query);
-            $arguments = $this->prepareArguments(['id' => new \Cassandra\Uuid($id)]);
+            try {
+                $arguments = $this->prepareArguments(['id' => new \Cassandra\Uuid($id)]);
+            } catch (\Cassandra\Exception\InvalidArgumentException $e) {
+                $this->logger->debug('CASSANDRA: '.$e->getMessage());
+
+                return;
+            }
 
             $this->logger->debug('CASSANDRA: '.$query.' => ['.$id.']');
 
