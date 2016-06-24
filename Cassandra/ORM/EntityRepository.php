@@ -75,7 +75,7 @@ class EntityRepository
      */
     public function find($id)
     {
-        return $this->_em->find($this->_tableName, $id);
+        return $this->_em->find($this->_class, $id);
     }
 
     /**
@@ -85,7 +85,7 @@ class EntityRepository
      */
     public function findAll()
     {
-        return $this->_em->findAll($this->_tableName);
+        return $this->_em->findAll($this->_class);
     }
 
     public function getOneOrNullResult($statement, $arguments)
@@ -96,5 +96,10 @@ class EntityRepository
     public function getResult($statement, $arguments)
     {
         return $this->_em->getResult($statement, $arguments);
+    }
+
+    public function createQuery($cql)
+    {
+        return $this->_em->createQuery($cql, $this->_class);
     }
 }

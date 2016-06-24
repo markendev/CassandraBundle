@@ -8,6 +8,7 @@ use Cassandra\Session;
 use Cassandra\Statement;
 use Cassandra\Type;
 use CassandraBundle\Cassandra\Connection;
+use CassandraBundle\Cassandra\ORM\Mapping\ClassMetadata;
 use CassandraBundle\Cassandra\ORM\Mapping\ClassMetadataFactoryInterface;
 use CassandraBundle\Cassandra\ORM\Repository\DefaultRepositoryFactory;
 use CassandraBundle\EventDispatcher\CassandraEvent;
@@ -50,6 +51,11 @@ class EntityManager implements Session, EntityManagerInterface
     public function getSchemaManager()
     {
         return $this->schemaManager;
+    }
+
+    public function getLogger()
+    {
+        return $this->logger;
     }
 
     /**
@@ -289,7 +295,7 @@ class EntityManager implements Session, EntityManagerInterface
         return $columnValue;
     }
 
-    private function cleanRow($cassandraRow)
+    public function cleanRow($cassandraRow)
     {
         $cleanRow = [];
         foreach ($cassandraRow as $name => $value) {
@@ -302,27 +308,27 @@ class EntityManager implements Session, EntityManagerInterface
     /**
      * Finds an Entity by its identifier.
      *
-     * @param string       $tableName   The table name of the entity to find.
-     * @param mixed        $id          The identity of the entity to find.
+     * @param ClassMetadata $metadata   The metadata of the entity to find.
+     * @param mixed         $id         The identity of the entity to find.
      *
      * @return object|null The entity instance or NULL if the entity can not be found.
      */
-    public function find($tableName, $id)
+    public function find(ClassMetadata $metadata, $id)
     {
         if ($id) {
-            $query = sprintf('SELECT * FROM %s WHERE id = ?', $tableName);
-            $statement = $this->prepare($query);
+            $cql = sprintf('SELECT * FROM %s WHERE id = ?', $metadata->table['name']);
+            $query = $this->createQuery($metadata, $cql);
             try {
-                $arguments = $this->prepareArguments(['id' => new \Cassandra\Uuid($id)]);
+                $query->addParameter($id, 'uuid');
             } catch (\Cassandra\Exception\InvalidArgumentException $e) {
                 $this->logger->debug('CASSANDRA: '.$e->getMessage());
 
                 return;
             }
 
-            $this->logger->debug('CASSANDRA: '.$query.' => ['.$id.']');
+            $this->logger->debug('CASSANDRA: '.$cql.' => ['.$id.']');
 
-            return $this->getOneOrNullResult($statement, $arguments);
+            return $query->getOneOrNullResult();
         }
 
         return;
@@ -331,39 +337,18 @@ class EntityManager implements Session, EntityManagerInterface
     /**
      * Finds all entities
      *
-     * @param string       $tableName   The class name of the entity to find.
+     * @param ClassMetadata $metadata   The metadata of the entity to find.
      *
      * @return ArrayCollection The array of entity instance or empty array if the entity can not be found.
      */
-    public function findAll($tableName)
+    public function findAll(ClassMetadata $metadata)
     {
-        $query = sprintf('SELECT * FROM %s', $tableName);
-        $statement = $this->prepare($query);
+        $cql = sprintf('SELECT * FROM %s', $metadata->table['name']);
+        $query = $this->createQuery($metadata, $cql);
 
-        $this->logger->debug('CASSANDRA: '.$query);
+        $this->logger->debug('CASSANDRA: '.$cql);
 
-        return $this->getResult($statement);
-    }
-
-    public function getOneOrNullResult($statement, ExecutionOptions $options = null)
-    {
-        $result = $this->execute($statement, $options);
-        if ($result && $data = $result->first()) {
-            return $this->cleanRow($data);
-        }
-
-        return;
-    }
-
-    public function getResult($statement, ExecutionOptions $options = null)
-    {
-        $result = $this->execute($statement, $options);
-        $entities = new ArrayCollection();
-        foreach ($result as $data) {
-            $entities[] = $this->cleanRow($data);
-        }
-
-        return $entities;
+        return $query->getResult();
     }
 
     public function prepareArguments($arguments)
@@ -449,5 +434,29 @@ class EntityManager implements Session, EntityManagerInterface
     protected function send($command, array $arguments)
     {
         return $this->connection->send($command, $arguments);
+    }
+
+    public function newHydrator(ClassMetadata $metadata, $hydrationMode)
+    {
+        switch ($hydrationMode) {
+            case Query::HYDRATE_OBJECT:
+                return new \CassandraBundle\Cassandra\ORM\Hydration\ObjectHydrator($metadata);
+
+            case Query::HYDRATE_ARRAY:
+                return new \CassandraBundle\Cassandra\ORM\Hydration\ArrayHydrator($metadata);
+        }
+
+        throw ORMException::invalidHydrationMode($hydrationMode);
+    }
+
+    public function createQuery(ClassMetadata $metadata, $cql = '')
+    {
+        $query = new Query($this);
+        $query->setMetadata($metadata);
+        if (!empty($cql)) {
+            $query->setCql($cql);
+        }
+
+        return $query;
     }
 }
