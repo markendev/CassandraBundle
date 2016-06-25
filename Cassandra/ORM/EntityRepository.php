@@ -100,6 +100,6 @@ class EntityRepository
 
     public function createQuery($cql)
     {
-        return $this->_em->createQuery($cql, $this->_class);
+        return $this->_em->createQuery($this->_class, $cql);
     }
 }
