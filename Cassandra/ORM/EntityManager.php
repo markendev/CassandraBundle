@@ -264,6 +264,8 @@ class EntityManager implements Session, EntityManagerInterface
     private function decodeColumnType($columnValue)
     {
         try {
+            if (is_bool($columnValue)) return $columnValue;
+
             return (string)$columnValue;
         } catch (\Exception $e) {
             // Cassandra\Map class

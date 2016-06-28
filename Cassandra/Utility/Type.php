@@ -54,7 +54,7 @@ class Type
     {
         if (method_exists('\Cassandra\Type', $type)) {
             $cassandraType = \Cassandra\Type::{$type}();
-            if ($value) {
+            if (null !== $value) {
                 return $cassandraType->create($value);
             }
 
