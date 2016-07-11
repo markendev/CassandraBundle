@@ -118,4 +118,16 @@ class Query
 
         return $entities;
     }
+
+    public function getSingleScalarResult()
+    {
+        $result = $this->execute();
+        if ($result && $data = $result->first()) {
+            $rowData = $this->_em->cleanRow($data);
+
+            return reset($rowData);
+        }
+
+        return 0;
+    }
 }

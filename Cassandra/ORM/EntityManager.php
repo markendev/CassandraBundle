@@ -323,12 +323,10 @@ class EntityManager implements Session, EntityManagerInterface
             try {
                 $query->addParameter($id, 'uuid');
             } catch (\Cassandra\Exception\InvalidArgumentException $e) {
-                $this->logger->debug('CASSANDRA: '.$e->getMessage());
+                $this->logger->error('CASSANDRA: '.$e->getMessage());
 
                 return;
             }
-
-            $this->logger->debug('CASSANDRA: '.$cql.' => ['.$id.']');
 
             return $query->getOneOrNullResult();
         }
@@ -347,8 +345,6 @@ class EntityManager implements Session, EntityManagerInterface
     {
         $cql = sprintf('SELECT * FROM %s', $metadata->table['name']);
         $query = $this->createQuery($metadata, $cql);
-
-        $this->logger->debug('CASSANDRA: '.$cql);
 
         return $query->getResult();
     }
