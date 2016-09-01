@@ -211,7 +211,9 @@ class EntityManager implements Session, EntityManagerInterface
     {
         foreach ($metadata->fieldMappings as $field) {
             $getterMethod = 'get'.ucfirst($field['fieldName']);
-            $values[$field['columnName']] = $this->encodeColumnType($field['type'], $entity->{$getterMethod}());
+            if (null !== $entity->{$getterMethod}()) {
+              $values[$field['columnName']] = $this->encodeColumnType($field['type'], $entity->{$getterMethod}());
+            }
         }
 
         return $values;
@@ -232,7 +234,7 @@ class EntityManager implements Session, EntityManagerInterface
 
         if (preg_match('/^set\<(.+)\>$/U', $type, $matches)) {
             $subType = trim($matches[1]);
-            if ($value) {
+            if (null !== $value) {
                 $set = new \Cassandra\Set($this->encodeColumnType($subType));
                 foreach ($value as $_value) {
                     $set->add($this->encodeColumnType($subType, $_value));
@@ -246,7 +248,7 @@ class EntityManager implements Session, EntityManagerInterface
         if (preg_match('/^map\<(.+),\ *(.+)\>$/U', $type, $matches)) {
             $keyType = trim($matches[1]);
             $valueType = trim($matches[2]);
-            if ($value) {
+            if (null !== $value) {
                 $map = new \Cassandra\Map($this->encodeColumnType($keyType), $this->encodeColumnType($valueType));
                 foreach ($value as $_key => $_value) {
                     $map->set($this->encodeColumnType($keyType, $_key), $this->encodeColumnType($valueType, $_value));
