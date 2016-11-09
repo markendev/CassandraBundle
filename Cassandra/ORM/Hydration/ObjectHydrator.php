@@ -9,8 +9,10 @@ class ObjectHydrator extends AbstractHydrator
         $className = $this->metadata->name;
         $entity = new $className();
         foreach ($this->metadata->fieldMappings as $fieldMapping) {
-            $setterMethod = 'set'.ucfirst($fieldMapping['fieldName']);
-            $entity->{$setterMethod}($rowData[$fieldMapping['columnName']]);
+            if (isset($rowData[$fieldMapping['columnName']])) {
+                $setterMethod = 'set'.ucfirst($fieldMapping['fieldName']);
+                $entity->{$setterMethod}($rowData[$fieldMapping['columnName']]);
+            }
         }
 
         return $entity;

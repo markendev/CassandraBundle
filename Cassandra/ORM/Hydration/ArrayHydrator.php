@@ -9,7 +9,9 @@ class ArrayHydrator extends AbstractHydrator
         $className = $this->metadata->name;
         $arrayEntity = [];
         foreach ($this->metadata->fieldMappings as $fieldMapping) {
-            $arrayEntity[$fieldMapping['fieldName']] = $rowData[$fieldMapping['columnName']];
+            if (isset($rowData[$fieldMapping['columnName']])) {
+                $arrayEntity[$fieldMapping['fieldName']] = $rowData[$fieldMapping['columnName']];
+            }
         }
 
         return $arrayEntity;
