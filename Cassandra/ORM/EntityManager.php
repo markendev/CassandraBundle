@@ -265,6 +265,8 @@ class EntityManager implements Session, EntityManagerInterface
 
     private function decodeColumnType($columnValue)
     {
+        if ($columnValue === null) return $columnValue;
+
         try {
             if (is_bool($columnValue)) return $columnValue;
 
