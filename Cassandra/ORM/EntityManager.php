@@ -269,9 +269,8 @@ class EntityManager implements Session, EntityManagerInterface
 
         try {
             if (is_bool($columnValue)) return $columnValue;
-
-            return (string)$columnValue;
-        } catch (\Exception $e) {
+            // Cassandra\Timestamp class
+            if ($columnValue instanceOf \Cassandra\Timestamp) return $columnValue->time();
             // Cassandra\Map class
             if ($columnValue instanceOf \Cassandra\Map) {
                 $decodedKeys = [];
@@ -295,6 +294,8 @@ class EntityManager implements Session, EntityManagerInterface
                 return $decodedValues;
             }
 
+            return (string)$columnValue;
+        } catch (\Exception $e) {
             return $columnValue->values();
         }
 
