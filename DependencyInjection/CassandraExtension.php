@@ -24,10 +24,8 @@ class CassandraExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        if ($container->getParameter('kernel.debug')) {
-            $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-            $loader->load('services.yml');
-        }
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader->load('services.yml');
 
         $mappingsConfig = [];
         if (isset($config['orm']) && $config['orm'] && $config['orm']['mappings']) {
