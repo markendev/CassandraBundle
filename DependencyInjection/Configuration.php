@@ -64,6 +64,7 @@ class Configuration implements ConfigurationInterface
                                 ->prototype('scalar')->end()
                             ->end()
                             ->integerNode('port')->defaultValue(9042)->end()
+                            ->integerNode('protocol_version')->defaultValue(1)->end()
                             ->booleanNode('token_aware_routing')->defaultValue(true)->end()
                             ->scalarNode('user')->isRequired()->defaultValue('')->end()
                             ->scalarNode('password')->isRequired()->defaultValue('')->end()

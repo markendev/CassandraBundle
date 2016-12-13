@@ -33,7 +33,8 @@ class Configurator
             ->withConnectTimeout($config['timeout']['connect'])
             ->withRequestTimeout($config['timeout']['request'])
             ->withPersistentSessions($config['persistent_sessions'])
-            ->withCredentials($config['user'], $config['password']);
+            ->withCredentials($config['user'], $config['password'])
+            ->withProtocolVersion($config['protocol_version']);
 
         if (isset($config['ssl']) && $config['ssl'] === true) {
             $ssl = new SSLOptionsBuilder();
