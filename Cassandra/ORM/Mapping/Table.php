@@ -29,4 +29,9 @@ final class Table extends Annotation
      * @var array
      */
     public $primaryKeys = ['id'];
+
+    /**
+     * @var int
+     */
+    public $ttl;
 }

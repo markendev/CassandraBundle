@@ -121,6 +121,10 @@ class EntityManager implements Session, EntityManagerInterface
             implode(', ', array_map(function () { return '?'; }, $columns))
         );
 
+        if (!empty($metadata->table['ttl'])) {
+            $statement .= ' USING TTL '. $metadata->table['ttl'];
+        }
+
         $this->statements[] = [
             self::STATEMENT => $statement,
             self::ARGUMENTS => $values,
@@ -147,7 +151,6 @@ class EntityManager implements Session, EntityManagerInterface
             $tableName,
             implode(', ', array_map(function ($column) { return sprintf('%s = ?', $column); }, $columns))
         );
-
         $this->statements[] = [
             self::STATEMENT => $statement,
             self::ARGUMENTS => array_merge($values, ['id' => $id]),
