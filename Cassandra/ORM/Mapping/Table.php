@@ -33,5 +33,10 @@ final class Table extends Annotation
     /**
      * @var int
      */
-    public $ttl;
+    public $defaultTtl = null;
+
+    /**
+     * @var bool
+     */
+    public $ifNoExist = null;
 }

@@ -129,7 +129,8 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
             $classMetadata->table['name'] = $classAnnotation->name ?: strtolower(preg_replace('/([^A-Z])([A-Z])/', '$1_$2', $reflectionClass->getShortName()));
             $classMetadata->table['indexes'] = $classAnnotation->indexes;
             $classMetadata->table['primaryKeys'] = $classAnnotation->primaryKeys;
-            $classMetadata->table['ttl'] = $classAnnotation->ttl;
+            $classMetadata->table['defaultTtl'] = $classAnnotation->defaultTtl;
+            $classMetadata->table['ifNoExist'] = $classAnnotation->ifNoExist;
         }
 
         // Save the field mapping to metadata
