@@ -29,4 +29,14 @@ final class Table extends Annotation
      * @var array
      */
     public $primaryKeys = ['id'];
+
+    /**
+     * @var int
+     */
+    public $defaultTtl = null;
+
+    /**
+     * @var bool
+     */
+    public $ifNoExist = null;
 }

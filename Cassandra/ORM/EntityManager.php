@@ -105,8 +105,9 @@ class EntityManager implements Session, EntityManagerInterface
      * Insert $entity to cassandra.
      *
      * @param object $entity
+     * @param Options $options |null
      */
-    public function insert($entity)
+    public function insert($entity, Options $options = null)
     {
         $metadata = $this->getClassMetadata(get_class($entity));
         $tableName = $metadata->table['name'];
@@ -118,8 +119,11 @@ class EntityManager implements Session, EntityManagerInterface
             $this->getKeyspace(),
             $tableName,
             implode(', ', $columns),
-            implode(', ', array_map(function () { return '?'; }, $columns))
+            implode(', ', array_map(function () {
+                return '?';
+            }, $columns))
         );
+        $statement = $this->decorateInsertStatement($statement, $metadata, $options);
 
         $this->statements[] = [
             self::STATEMENT => $statement,
@@ -128,11 +132,34 @@ class EntityManager implements Session, EntityManagerInterface
     }
 
     /**
+     * add options to statement
+     * @param $statement
+     * @param ClassMetadata $metadata
+     * @param Options|null $options
+     * @return string
+     */
+    private function decorateInsertStatement($statement, ClassMetadata $metadata, Options $options = null)
+    {
+        if (!empty($options) && !empty($options->getIfNoExist())) {
+            $statement .= ' IF NOT EXISTS ';
+        } elseif (!empty($metadata->table['ifNoExist'])) {
+            $statement .= ' IF NOT EXISTS ';
+        }
+        if (!empty($options) && !empty($options->getTtl())) {
+            $statement .= ' USING TTL ' . $options->getTtl();
+        } elseif (!empty($metadata->table['defaultTtl'])) {
+            $statement .= ' USING TTL ' . $metadata->table['defaultTtl'];
+        }
+        return $statement;
+    }
+
+    /**
      * Update $entity to cassandra.
      *
      * @param object $entity
+     * @param Options|null $options
      */
-    public function update($entity)
+    public function update($entity, Options $options = null)
     {
         $metadata = $this->getClassMetadata(get_class($entity));
         $tableName = $metadata->table['name'];
@@ -145,13 +172,30 @@ class EntityManager implements Session, EntityManagerInterface
             'UPDATE "%s"."%s" SET %s WHERE id = ?',
             $this->getKeyspace(),
             $tableName,
-            implode(', ', array_map(function ($column) { return sprintf('%s = ?', $column); }, $columns))
+            implode(', ', array_map(function ($column) {
+                return sprintf('%s = ?', $column);
+            }, $columns))
         );
-
+        $statement = $this->decorateUpdateStatement($statement, $metadata, $options);
         $this->statements[] = [
             self::STATEMENT => $statement,
             self::ARGUMENTS => array_merge($values, ['id' => $id]),
         ];
+    }
+
+    /**
+     * add options to statement
+     * @param $statement
+     * @param ClassMetadata $metadata
+     * @param Options|null $options
+     * @return string
+     */
+    private function decorateUpdateStatement($statement, ClassMetadata $metadata, Options $options = null)
+    {
+        if (!empty($options) && !empty($options->getExist())) {
+            $statement .= ' IF EXISTS ';
+        }
+        return $statement;
     }
 
     /**
@@ -186,7 +230,7 @@ class EntityManager implements Session, EntityManagerInterface
             $batch = new BatchStatement(\Cassandra::BATCH_LOGGED);
 
             foreach ($this->statements as $statement) {
-                $this->logger->debug('CASSANDRA: '.$statement[self::STATEMENT].' => '.json_encode($statement[self::ARGUMENTS]));
+                $this->logger->debug('CASSANDRA: ' . $statement[self::STATEMENT] . ' => ' . json_encode($statement[self::ARGUMENTS]));
                 $batch->add($this->prepare($statement[self::STATEMENT]), $statement[self::ARGUMENTS]);
             }
 
@@ -210,9 +254,9 @@ class EntityManager implements Session, EntityManagerInterface
     private function readColumn($entity, $metadata)
     {
         foreach ($metadata->fieldMappings as $field) {
-            $getterMethod = 'get'.ucfirst($field['fieldName']);
+            $getterMethod = 'get' . ucfirst($field['fieldName']);
             if (null !== $entity->{$getterMethod}()) {
-              $values[$field['columnName']] = $this->encodeColumnType($field['type'], $entity->{$getterMethod}());
+                $values[$field['columnName']] = $this->encodeColumnType($field['type'], $entity->{$getterMethod}());
             }
         }
 
@@ -223,7 +267,7 @@ class EntityManager implements Session, EntityManagerInterface
      * Return $value with appropriate $type.
      *
      * @param string $type
-     * @param mixed  $value
+     * @param mixed $value
      *
      * @return mixed
      */
@@ -265,12 +309,18 @@ class EntityManager implements Session, EntityManagerInterface
 
     private function decodeColumnType($columnValue)
     {
-        if ($columnValue === null) return $columnValue;
+        if ($columnValue === null) {
+            return $columnValue;
+        }
 
         try {
-            if (is_bool($columnValue)) return $columnValue;
+            if (is_bool($columnValue)) {
+                return $columnValue;
+            }
             // Cassandra\Timestamp class
-            if ($columnValue instanceOf \Cassandra\Timestamp) return $columnValue->time();
+            if ($columnValue instanceOf \Cassandra\Timestamp) {
+                return $columnValue->time();
+            }
             // Cassandra\Map class
             if ($columnValue instanceOf \Cassandra\Map) {
                 $decodedKeys = [];
@@ -315,8 +365,8 @@ class EntityManager implements Session, EntityManagerInterface
     /**
      * Finds an Entity by its identifier.
      *
-     * @param ClassMetadata $metadata   The metadata of the entity to find.
-     * @param mixed         $id         The identity of the entity to find.
+     * @param ClassMetadata $metadata The metadata of the entity to find.
+     * @param mixed $id The identity of the entity to find.
      *
      * @return object|null The entity instance or NULL if the entity can not be found.
      */
@@ -328,7 +378,7 @@ class EntityManager implements Session, EntityManagerInterface
             try {
                 $query->addParameter($id, 'uuid');
             } catch (\Cassandra\Exception\InvalidArgumentException $e) {
-                $this->logger->error('CASSANDRA: '.$e->getMessage());
+                $this->logger->error('CASSANDRA: ' . $e->getMessage());
 
                 return;
             }
@@ -342,7 +392,7 @@ class EntityManager implements Session, EntityManagerInterface
     /**
      * Finds all entities
      *
-     * @param ClassMetadata $metadata   The metadata of the entity to find.
+     * @param ClassMetadata $metadata The metadata of the entity to find.
      *
      * @return ArrayCollection The array of entity instance or empty array if the entity can not be found.
      */
