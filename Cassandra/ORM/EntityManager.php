@@ -256,11 +256,33 @@ class EntityManager implements Session, EntityManagerInterface
         foreach ($metadata->fieldMappings as $field) {
             $getterMethod = 'get' . ucfirst($field['fieldName']);
             if (null !== $entity->{$getterMethod}()) {
-                $values[$field['columnName']] = $this->encodeColumnType($field['type'], $entity->{$getterMethod}());
+                if($this->isCassandraType($entity->{$getterMethod}())) {
+                    $values[$field['columnName']] = $entity->{$getterMethod}();
+                } else {
+                    $values[$field['columnName']] = $this->encodeColumnType($field['type'], $entity->{$getterMethod}());
+                }
             }
         }
 
         return $values;
+    }
+    
+    /**
+     * Return bool if cassandra type.
+     *
+     * @param object $obj
+     *
+     * @return bool
+     */
+    private function isCassandraType($obj)
+    {
+        $classNames = array('\Cassandra\Collection', '\Cassandra\Custom', '\Cassandra\Map', '\Cassandra\Scalar', '\Cassandra\Set', '\Cassandra\Tuple', '\Cassandra\UserType');
+        foreach ($classNames as $className) {
+            if (is_a($obj, $className)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
