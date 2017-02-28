@@ -158,44 +158,12 @@ class EntityManager implements Session, EntityManagerInterface
      *
      * @param object $entity
      * @param Options|null $options
+     *
+     * @deprecated update method will be deprecated since version 1.3 and will be removed in 1.5
      */
     public function update($entity, Options $options = null)
     {
-        $metadata = $this->getClassMetadata(get_class($entity));
-        $tableName = $metadata->table['name'];
-        $values = $this->readColumn($entity, $metadata);
-        $id = $values['id'];
-        unset($values['id']);
-        $columns = array_keys($values);
-
-        $statement = sprintf(
-            'UPDATE "%s"."%s" SET %s WHERE id = ?',
-            $this->getKeyspace(),
-            $tableName,
-            implode(', ', array_map(function ($column) {
-                return sprintf('%s = ?', $column);
-            }, $columns))
-        );
-        $statement = $this->decorateUpdateStatement($statement, $metadata, $options);
-        $this->statements[] = [
-            self::STATEMENT => $statement,
-            self::ARGUMENTS => array_merge($values, ['id' => $id]),
-        ];
-    }
-
-    /**
-     * add options to statement
-     * @param $statement
-     * @param ClassMetadata $metadata
-     * @param Options|null $options
-     * @return string
-     */
-    private function decorateUpdateStatement($statement, ClassMetadata $metadata, Options $options = null)
-    {
-        if (!empty($options) && !empty($options->getExist())) {
-            $statement .= ' IF EXISTS ';
-        }
-        return $statement;
+        return $this->insert($entity, $options);
     }
 
     /**

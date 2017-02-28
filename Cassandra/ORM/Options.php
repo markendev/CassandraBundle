@@ -17,11 +17,6 @@ class Options
     private $ifNoExist;
 
     /**
-     * @var bool
-     */
-    private $exist;
-
-    /**
      * @return int
      */
     public function getTtl()
@@ -54,24 +49,6 @@ class Options
     public function setIfNoExist($ifNoExist)
     {
         $this->ifNoExist = $ifNoExist;
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getExist()
-    {
-        return $this->exist;
-    }
-
-    /**
-     * @param bool $exist
-     * @return Options
-     */
-    public function setExist( $exist)
-    {
-        $this->exist = $exist;
         return $this;
     }
 }

@@ -24,6 +24,11 @@ class SchemaManager
         $fieldsWithType = array_map(function ($field) { return $field['columnName'].' '.$field['type']; }, $fields);
         $primaryKeyCQL = '';
         if (count($primaryKeyFields) > 0) {
+            $partitionKey = $primaryKeyFields[0];
+            // if there is composite partition key
+            if (is_array($partitionKey) && count($partitionKey) > 1) {
+                $primaryKeyFields[0] = sprintf('(%s)', implode(',', $partitionKey));
+            }
             $primaryKeyCQL = sprintf(',PRIMARY KEY (%s)', implode(',', $primaryKeyFields));
         }
 
