@@ -27,11 +27,11 @@ class CassandraExtension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
-        $mappingsConfig = [];
-        if (isset($config['orm']) && $config['orm'] && $config['orm']['mappings']) {
-            $mappingsConfig = $config['orm']['mappings'];
+        $ormConfig = [];
+        if (isset($config['orm']) && $config['orm']) {
+            $ormConfig = $config['orm'];
         }
-        $this->metadataFactoryLoad($container, $mappingsConfig);
+        $this->metadataFactoryLoad($container, $ormConfig);
 
         foreach ($config['connections'] as $connectionId => $connectionConfig) {
             $connectionConfig['dispatch_events'] = $config['dispatch_events'];
@@ -41,10 +41,16 @@ class CassandraExtension extends Extension
 
     protected function metadataFactoryLoad(ContainerBuilder $container, array $config)
     {
-        $container
+        $classMetadataFactoryDefinition = $container
             ->register('cassandra.factory.metadata', "CassandraBundle\\Cassandra\\ORM\\Mapping\\ClassMetadataFactory")
-            ->addArgument($config)
-            ->addArgument(new Reference('annotation_reader'));
+            ->addArgument(isset($config['mappings']) ? $config['mappings'] : [])
+            ->addArgument(new Reference('annotation_reader'))
+            ->setPublic(false);
+
+        if (isset($config['metadata_cache_driver'])) {
+            $cacheDriverReference = new Reference($config['metadata_cache_driver']);
+            $classMetadataFactoryDefinition->addMethodCall('setCacheDriver', [$cacheDriverReference]);
+        }
     }
 
     protected function ormLoad(ContainerBuilder $container, $connectionId, array $config)

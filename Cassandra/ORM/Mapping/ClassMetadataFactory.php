@@ -3,6 +3,7 @@
 namespace CassandraBundle\Cassandra\ORM\Mapping;
 
 use Doctrine\Common\Annotations\Reader;
+use Doctrine\Common\Cache\Cache;
 use Doctrine\Common\Util\ClassUtils;
 
 /**
@@ -19,6 +20,18 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
     private $reader;
 
     /**
+     * Salt used by specific Object Manager implementation.
+     *
+     * @var string
+     */
+    protected $cacheSalt = '$CLASSMETADATA';
+
+    /**
+     * @var \Doctrine\Common\Cache\Cache|null
+     */
+    private $cacheDriver;
+
+    /**
      * @var ClassMetadata[]
      */
     private $loadedMetadata = [];
@@ -27,6 +40,28 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
     {
         $this->mappingsConfig = $mappingsConfig;
         $this->reader = $reader;
+    }
+
+    /**
+     * Sets the cache driver used by the factory to cache ClassMetadata instances.
+     *
+     * @param \Doctrine\Common\Cache\Cache $cacheDriver
+     *
+     * @return void
+     */
+    public function setCacheDriver(Cache $cacheDriver = null)
+    {
+        $this->cacheDriver = $cacheDriver;
+    }
+
+    /**
+     * Gets the cache driver used by the factory to cache ClassMetadata instances.
+     *
+     * @return \Doctrine\Common\Cache\Cache|null
+     */
+    public function getCacheDriver()
+    {
+        return $this->cacheDriver;
     }
 
     /**
@@ -53,7 +88,7 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
         $this->doLoadMetadata($classMetadata);
         $this->loadedMetadata[$name] = $classMetadata;
 
-        return $classMetadata;
+        return $name;
     }
 
     /**
@@ -86,7 +121,27 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
             return $this->loadedMetadata[$className] = $this->loadedMetadata[$realClassName];
         }
 
-        return $this->loadMetadata($realClassName);
+        if ($this->cacheDriver) {
+            if (($cached = $this->cacheDriver->fetch($realClassName . $this->cacheSalt)) !== false) {
+                $this->loadedMetadata[$realClassName] = $cached;
+            } else {
+                $loadedClassName = $this->loadMetadata($realClassName);
+                $this->cacheDriver->save(
+                    $loadedClassName . $this->cacheSalt,
+                    $this->loadedMetadata[$loadedClassName],
+                    null
+                );
+            }
+        } else {
+            $this->loadMetadata($realClassName);
+        }
+
+        if ($className !== $realClassName) {
+            // We do not have the alias name in the map, include it
+            $this->loadedMetadata[$className] = $this->loadedMetadata[$realClassName];
+        }
+
+        return $this->loadedMetadata[$className];
     }
 
     /**

@@ -234,7 +234,7 @@ class EntityManager implements Session, EntityManagerInterface
 
         return $values;
     }
-    
+
     /**
      * Return bool if cassandra type.
      *

@@ -2,6 +2,7 @@
 
 namespace CassandraBundle\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -86,6 +87,22 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
+            ->end();
+
+        $this->addOrmSection($rootNode);
+
+        return $treeBuilder;
+    }
+
+    /**
+     * Return a ORM configuration
+     *
+     * @param ArrayNodeDefinition $rootNode
+     */
+    private function addOrmSection(ArrayNodeDefinition $rootNode)
+    {
+        $rootNode
+            ->children()
                 ->arrayNode('orm')
                     ->children()
                         ->arrayNode('mappings')
@@ -99,10 +116,10 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
+                        ->scalarNode('metadata_cache_driver')->defaultNull()->end()
                     ->end()
                 ->end()
             ->end();
-
-        return $treeBuilder;
+        ;
     }
 }
