@@ -120,7 +120,7 @@ class HotelRepository extends \CassandraBundle\Cassandra\ORM\EntityRepository
             implode(', ', array_map(function () { return '?'; }, $ids))
         );
         $statement = $em->prepare($cql);
-        $arguments = new \Cassandra\ExecutionOptions(['arguments' => array_map(function ($id) { return CassandraType::transformToCassandraType('uuid', $id); }, $ids)]);
+        $arguments = array('arguments' => array_map(function ($id) { return CassandraType::transformToCassandraType('uuid', $id); }, $ids));
 
         return $this->getResult($statement, $arguments);
     }
