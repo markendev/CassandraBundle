@@ -1,17 +1,13 @@
 {
-    "name": "hendrahuang/cassandra-bundle",
+    "name": "markendev-cassandra-bundle",
     "type" : "symfony-bundle",
     "description": "Symfony2 / Symfony 3 bundle on top of datastax/php-driver",
     "keywords": ["cassandra", "bundle", "symfony2", "symfony3"],
     "license" : "MIT",
     "authors": [
         {
-            "name": "Hendra Huang",
-            "email": "hendrahuang92@gmail.com"
-        },
-        {
-            "name": "Indra Gunawan",
-            "email": "hello@indra.my.id"
+            "name": "Andrii Pleskach",
+            "email": "andrii.pleskach@gmail.com"
         }
     ],
     "require": {
