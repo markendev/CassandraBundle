@@ -27,7 +27,7 @@ class Configurator
         $cluster
             ->withDefaultConsistency($consistency)
             ->withDefaultPageSize($config['default_pagesize'])
-            ->withContactPoints($config['hosts'])
+            ->withContactPoints(explode(',', $config['hosts']))
             ->withPort($config['port'])
             ->withTokenAwareRouting($config['token_aware_routing'])
             ->withConnectTimeout($config['timeout']['connect'])
