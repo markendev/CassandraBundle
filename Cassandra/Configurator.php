@@ -26,7 +26,7 @@ class Configurator
         $cluster = new Builder();
         $cluster
             ->withDefaultConsistency($consistency)
-            ->withDefaultPageSize($config['default_pagesize'])
+            ->withDefaultPageSize($config['default_pagesize'] == -1 ? NULL : $config['default_pagesize'])
             ->withContactPoints($config['hosts'])
             ->withPort($config['port'])
             ->withTokenAwareRouting($config['token_aware_routing'])
